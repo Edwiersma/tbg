@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>dcrawl</title>
+  <title>dcrawl.exe</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      margin: 0;
       background-color: #1e1e1e;
       display: flex;
       justify-content: center;
@@ -17,56 +18,257 @@
     }
 
     .window {
-      width: 1024spx;
-      max-width: 90%;
+      width: 50%;
+      max-width: 95%;
+      max-height: 720px;
       background-color: #0c0c0c;
       border-radius: 6px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      box-shadow: 0 0 24px rgba(0,0,0,0.7);
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .titlebar {
       background: #2d2d2d;
-      padding: 6px 10px;
-      font-size: 0.9rem;
-      color: #ccc;
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      color: #aaa;
+      border-bottom: 1px solid #111;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
-    .content {
-      padding: 16px;
+    #output {
+      padding: 14px 16px;
       color: #e5e5e5;
-      white-space: pre;
-      line-height: 1.4;
-      font-size: 0.95rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.45;
+      font-size: 0.9rem;
+      overflow-y: auto;
+      height = 400px;
+      max-height: 620px;
+      flex: 1;
     }
 
-    .cursor {
-      display: inline-block;
-      width: 1px;
-      height: 1em;
-      background-color: #e5e5e5;
-      margin-left: 2px;
-      margin-bottom: -2px;
-      animation: blink 1s steps(1) infinite;
+    .line     { display: block; }
+    .line.cmd { color: #8fc; }
+    .line.err { color: #f88; }
+    .line.dim { color: #888; }
+
+    #input-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      border-top: 1px solid #111;
+      background: #111;
+      flex-shrink: 0;
     }
 
-    @keyframes blink {
-      50% {
-        background-color: transparent;
-      }
+    #prompt-label {
+      color: #8fc;
+      white-space: nowrap;
+      margin-right: 6px;
+      font-size: 0.9rem;
+    }
+
+    #cmd-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #e5e5e5;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.9rem;
+      caret-color: #e5e5e5;
     }
   </style>
 </head>
 <body>
   <div class="window">
-    <div class="titlebar">DCRAWL</div>
-    <div class="content">Microsoft Windows [Version 10.0.22631.6199]
-(c) Microsoft Corporation. All rights reserved.
-
-C:\Users\edwiersma>dcrawl.exe
-DCRAWL v0.1, Apr  10 2026, 17:50:34) [MSC v.1938 64 bit (AMD64)] on win32
-Type "help", "copyright", "credits" or "license" for more information.
->>><span class="cursor"></span></div>
+    <div class="titlebar">
+      <span style="margin-left:4px;">dcrawl.exe</span>
+    </div>
+    <div id="output"></div>
+    <div id="input-row">
+      <span id="prompt-label">&gt;&gt;&gt;</span>
+      <input id="cmd-input" type="text" autocomplete="off" spellcheck="false" />
+    </div>
   </div>
+
+  <!-- Loading bar module — no other dependency -->
+  <script src="loadingbar.js"></script>
+
+  <!-- Pyodide — runs Python in the browser via WebAssembly -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+
+  <script>
+    const outputEl = document.getElementById('output');
+    const inputEl  = document.getElementById('cmd-input');
+    const MAX_LINES = 100;
+
+    let lines       = [];
+    let pyodide     = null;
+    let engineReady = false;
+
+    /* ── Rendering ─────────────────────────────────────────────────── */
+
+    function renderLines() {
+      outputEl.innerHTML = '';
+      lines.slice(-MAX_LINES).forEach(l => {
+        const span = document.createElement('span');
+        span.className = 'line' + (l.cls ? ' ' + l.cls : '');
+        span.textContent = l.text;
+        outputEl.appendChild(span);
+      });
+      outputEl.scrollTop = outputEl.scrollHeight;
+    }
+
+    /**
+     * addLine(text, cls, ref)
+     *
+     * When `ref` is supplied it is pushed directly so loadingbar.js
+     * can mutate the object in-place for the animated bar.
+     */
+    function addLine(text, cls, ref) {
+      if (ref) {
+        lines.push(ref);
+      } else {
+        lines.push({ text: text ?? '', cls: cls ?? '' });
+      }
+      if (lines.length > MAX_LINES) lines = lines.slice(-MAX_LINES);
+    }
+
+    /* ── Boot sequence ─────────────────────────────────────────────── */
+
+    const OS_HEADER = [
+      'Microsoft Windows [Version 10.0.22631.6199]',
+      '(c) Microsoft Corporation. All rights reserved.',
+      '',
+      'C:\\Users\\edwiersma>dcrawl.exe',
+      '',
+    ];
+
+
+
+    // 1. Print OS header + launch command
+    const BOOT_LINES = [
+      'DCRAWL v0.1, Apr  10 2026, 17:50:34) [MSC v.1938 64 bit (AMD64)] on win32',
+      'Type "help", "copyright", "credits" or "license" for more information.',
+      '',
+    ];
+async function boot() {
+  inputEl.disabled = true;
+
+  // Start Pyodide download immediately in the background
+  const pyodidePromise = loadPyodide();
+
+  // 1. OS header + launch line
+  [
+    'Microsoft Windows [Version 10.0.22631.6199]',
+    '(c) Microsoft Corporation. All rights reserved.',
+    '',
+    'C:\\Users\\edwiersma>dcrawl.exe',
+  ].forEach(t => addLine(t));
+  renderLines();
+
+  await new Promise(r => setTimeout(r, 300));
+
+  // 2. Animated loading bar — Pyodide downloads concurrently
+  await runLoadingBar(addLine, renderLines);
+
+  // 3. DCRAWL info after bar
+  addLine('DCRAWL v0.1, Apr  10 2026, 17:50:34) [MSC v.1938 64 bit (AMD64)] on win32');
+  addLine('Type "help", "copyright", "credits" or "license" for more information.');
+  addLine('');
+  renderLines();
+
+  // 4. Await Pyodide — may already be done by now
+  addLine('Loading Python engine...', 'dim');
+  renderLines();
+
+  try {
+    pyodide = await pyodidePromise;
+
+    const src = await fetch('./engine.py').then(r => {
+      if (!r.ok) throw new Error('Could not fetch engine.py');
+      return r.text();
+    });
+    await pyodide.runPythonAsync(src);
+
+    engineReady = true;
+
+    const loadingLine = lines.findLast(l => l.text === 'Loading Python engine...');
+    if (loadingLine) loadingLine.text = 'Python engine ready.';
+    } catch (err) {
+    const loadingLine = lines.findLast(l => l.text === 'Loading Python engine...');
+    if (loadingLine) {
+      loadingLine.text = 'Engine failed to load: ' + err.message;
+      loadingLine.cls  = 'err';
+    }
+  }
+
+  addLine('');
+  renderLines();
+
+  const intro = await pyodide.runPythonAsync('run_init()');
+  for (const line of String(intro).split('\n')) {
+  addLine(line);
+  renderLines();
+  await new Promise(r => setTimeout(r, 350)); // delay per line in ms
+}
+
+  inputEl.disabled = false;
+  inputEl.focus();
+}
+
+    /* ── Command handler — delegates to handle_command() in engine.py  */
+
+    async function handleCommand(raw) {
+      const cmd = raw.trim();
+      addLine('>>> ' + cmd, 'cmd');
+
+      if (!cmd) { renderLines(); return; }
+
+      if (!engineReady) {
+        addLine('Engine is still loading, please wait...', 'err');
+        renderLines();
+        return;
+      }
+
+      try {
+        // Safely pass the command string into Python
+        pyodide.globals.set('_cmd_input', cmd);
+        const result = await pyodide.runPythonAsync('handle_command(_cmd_input)');
+
+        if (result === '__RESET__') {
+          location.reload();
+          return;
+        }
+
+        String(result).split('\n').forEach(line => addLine(line)); renderLines();
+
+      } catch (err) {
+        addLine('Engine error: ' + err.message, 'err');
+      }
+
+      renderLines();
+    }
+
+    /* ── Input listener ────────────────────────────────────────────── */
+
+    inputEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const val = inputEl.value;
+        inputEl.value = '';
+        handleCommand(val);
+      }
+    });
+
+    boot();
+  </script>
 </body>
 </html>
