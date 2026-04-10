@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>dcrawl</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      background-color: #1e1e1e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .window {
+      width: 1024spx;
+      max-width: 90%;
+      background-color: #0c0c0c;
+      border-radius: 6px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+
+    .titlebar {
+      background: #2d2d2d;
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    .content {
+      padding: 16px;
+      color: #e5e5e5;
+      white-space: pre;
+      line-height: 1.4;
+      font-size: 0.95rem;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 1px;
+      height: 1em;
+      background-color: #e5e5e5;
+      margin-left: 2px;
+      margin-bottom: -2px;
+      animation: blink 1s steps(1) infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        background-color: transparent;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">DCRAWL</div>
+    <div class="content">Microsoft Windows [Version 10.0.22631.6199]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\edwiersma>dcrawl.exe
+DCRAWL v0.1, Apr  10 2026, 17:50:34) [MSC v.1938 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>><span class="cursor"></span></div>
+  </div>
+</body>
+</html>
