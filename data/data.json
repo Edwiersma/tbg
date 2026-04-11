@@ -25,7 +25,7 @@
       "game_var": "player_class"
     },
     {
-      "q": "{player_class[desc]} Magnificent! What meridiem is it? am/pm",
+      "q": "{player_name}, {player_class[desc]} Magnificent! What meridiem is it? am/pm",
       "a": ["am","pm"],
       "game_var": "game_meridiem"
     },
@@ -39,17 +39,17 @@
     "sword": {
       "class_name": "Warrior",
       "equipment": ["Heavy Armor", "Sword", "Shield"],
-      "desc": "A mighty Warrior with Sword and Shield."
+      "desc": "a mighty Warrior with Sword and Shield."
     },
     "bow": {
       "class_name": "Ranger",
       "equipment": ["Leather Armor", "Bow", "Arrow Quiver"],
-      "desc": "A nimble Ranger, danger at a distance."
+      "desc": "a nimble Ranger, danger at a distance."
     },
     "magic": {
       "class_name": "Sorcerer",
       "equipment": ["Silken Robe", "Magical Staff", "Holy Symbol"],
-      "desc": "A wise Sorcerer wielding the elemental powers."
+      "desc": "a wise Sorcerer wielding the elemental powers."
     }
   }
 }
