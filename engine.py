@@ -1,48 +1,49 @@
-# engine.py — DCRAWL game engine
+try:
+    import json
+    with open('data/data.json') as json_file:
+        GAME_DATA = json.load(json_file)
+except:
+    pass
 
 class GameState:
     def __init__(self):
-        self.inventory = []
-        self.init_step = 0
         self.initialized = False
-        self.name = None
+        self.init_step = 0
+        self.player_name = None
+        self.player_class = None
         self.time = None
+        self.character_classes = [GAME_DATA["character_classes"].keys(), "/".join(GAME_DATA["character_classes"].keys())]
+
+    def handler_interface(self, cmd: str) -> str:
+        if not self.initialized:
+            return self.initialize(cmd)
+
+        return str(self.__dict__)
+
+    def run_intro(self):
+        return "\n".join(GAME_DATA.get("game_intro")+[GAME_DATA.get("game_init")[0].get("q")])
 
     def initialize(self, cmd):
-        if self.init_step == 0:
+        a_required = GAME_DATA.get("game_init")[self.init_step].get("a", None)
+        a_list = GAME_DATA.get("game_init")[self.init_step].get("a")
+        if a_list:
+            cmd = cmd.lower()
+            if isinstance(a_list, str):
+                a_list = a_list.format_map(self.__dict__)
+        if not a_required or cmd in a_list:
+            game_var = GAME_DATA.get("game_init")[self.init_step].get("game_var", None)
+            if game_var:
+                if game_var == "player_class":
+                    self.player_class = GAME_DATA.get("character_classes").get(cmd)
+                    print(self.player_class)
+                else:
+                    self.__setattr__(GAME_DATA.get("game_init")[self.init_step].get("game_var"),cmd)
             self.init_step += 1
-            return "\n".join([
-                "main.py",
-                " ", " ",
-                "Welcome, adventurer, to DUNGEON CRAWL.",
-                "A realm of darkness rendered in flickering characters and unforgiving logic.",
-                "Beneath you lies a labyrinth of ancient stone, where every step deeper into the grid may bring fortune... or doom.",
-                "Treasures glint in the shadows, monsters lurk beyond the limits of your sight,",
-                "and survival depends not on reflex, but on wit and command. Type carefully the dungeon listens.",
-                " ",
-                f"Are you sure you want to initialize your adventure? y/n"
-            ])
-
-        if self.init_step == 1:
-            if cmd == "y":
-                self.init_step += 1
-                return f"What is your name brave adventurer?"
-            else:
-                return "__RESET__"
-
-        if self.init_step == 2:
-            self.name = cmd
-            self.init_step += 1
-            return (f"Welcome to land of Munhendia"
-                    f"What time is it right now? (Default 12:30pm)")
-
-        if self.init_step == 3:
-            return ""
-
-        else:
-            return ""
-
-
+            if self.init_step == len(GAME_DATA.get("game_init")):
+                self.initialized = True
+                return self.handler_interface(cmd)
+        print(GAME_DATA.get("game_init")[self.init_step].get("q"))
+        return GAME_DATA.get("game_init")[self.init_step].get("q").format_map(self.__dict__)
 
     def help(self):
         return (
@@ -55,18 +56,3 @@ class GameState:
 
     def credits(self):
         return "Dungeon Crawl v0.1 — A dungeon crawler by Edwiersma"
-
-
-state = GameState()
-
-def run_init():
-    return state.initialize(cmd=None)
-
-def handle_command(cmd: str) -> str:
-    cmd = cmd.strip()
-    lower = cmd.lower()
-    parts = lower.split()
-
-
-    if not state.initialized:
-        return state.initialize(lower)

@@ -186,35 +186,46 @@ async function boot() {
   addLine('');
   renderLines();
 
-  // 4. Await Pyodide — may already be done by now
-  addLine('Loading Python engine...', 'dim');
-  renderLines();
+// 4. Await Pyodide — may already be done by now
+addLine('Loading Python engine...', 'dim');
+renderLines();
 
-  try {
-    pyodide = await pyodidePromise;
+async function loadPythonModule(path) {
+  const src = await fetch(path).then(r => r.text());
+  await pyodide.runPythonAsync(src);
+}
 
-    const src = await fetch('./engine.py').then(r => {
-      if (!r.ok) throw new Error('Could not fetch engine.py');
-      return r.text();
-    });
-    await pyodide.runPythonAsync(src);
+try {
+  pyodide = await pyodidePromise;
 
-    engineReady = true;
+  // Load in dependency order — each file can use what was loaded before it
+  // Load Game Data
+  const response = await fetch('./data/data.json');
+  const data = await response.json();
+  // Make it available in Python as a dictionary
+  pyodide.globals.set('GAME_DATA', pyodide.toPy(data));
+  // Load Engine Components
+  await loadPythonModule('./cmd.py');
+  await loadPythonModule('./engine.py');
+  await loadPythonModule('./__init__.py');
 
-    const loadingLine = lines.findLast(l => l.text === 'Loading Python engine...');
-    if (loadingLine) loadingLine.text = 'Python engine ready.';
-    } catch (err) {
-    const loadingLine = lines.findLast(l => l.text === 'Loading Python engine...');
-    if (loadingLine) {
-      loadingLine.text = 'Engine failed to load: ' + err.message;
-      loadingLine.cls  = 'err';
-    }
+  engineReady = true;
+
+  const loadingLine = lines.findLast(l => l.text === 'Loading Python engine...');
+  if (loadingLine) loadingLine.text = 'Python engine ready.';
+
+} catch (err) {
+  const loadingLine = lines.findLast(l => l.text === 'Loading Python engine...');
+  if (loadingLine) {
+    loadingLine.text = 'Engine failed to load: ' + err.message;
+    loadingLine.cls  = 'err';
   }
+}
 
   addLine('');
   renderLines();
 
-  const intro = await pyodide.runPythonAsync('run_init()');
+  const intro = await pyodide.runPythonAsync('intro()');
   for (const line of String(intro).split('\n')) {
   addLine(line);
   renderLines();
@@ -242,7 +253,7 @@ async function boot() {
       try {
         // Safely pass the command string into Python
         pyodide.globals.set('_cmd_input', cmd);
-        const result = await pyodide.runPythonAsync('handle_command(_cmd_input)');
+        const result = await pyodide.runPythonAsync('send_cmd(_cmd_input)');
 
         if (result === '__RESET__') {
           location.reload();
