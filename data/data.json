@@ -1,40 +1,46 @@
 {
   "game_intro": [
-    "engine.py 0.9.0 - Pythonic Games© - 1991 ",
-    " ", " ",
     "Welcome adventurer, to DUNGEON CRAWL.",
     "A realm of darkness rendered in flickering characters and unforgiving logic.",
     "Beneath you lies a labyrinth of ancient stone, where every step deeper into the grid may bring fortune... or doom.",
     "Treasures glint in the shadows, monsters lurk beyond the limits of your sight,",
     "and survival depends not on reflex, but on wit and command. Type carefully the dungeon listens.",
     " "
-
   ],
-  "game_init": [
-    {
-      "q": "Are you sure you want to initialize your adventure? y/n",
-      "a": ["y","n"]
-    },
-    {
-      "q": "What is your name brave adventurer?",
-      "game_var": "player_name"
-    },
-    {
-      "q": "{player_name}, how will you vanquish your foes? {character_classes[1]}",
-      "a": "{character_classes[0]}",
-      "game_var": "player_class"
-    },
-    {
-      "q": "{player_name}, {player_class[desc]} Magnificent! What meridiem is it? am/pm",
-      "a": ["am","pm"],
-      "game_var": "game_meridiem"
-    },
-    {
-      "q": "It is time to get going! What hour of the day is it? 1-12",
-      "a": ["1","2","3","4","5","6","7","8","9","10","12"],
-      "game_var": "game_time"
-    }
-  ],
+  "game_init": {
+    "steps": [
+      {
+        "q": "Are you sure you want to initialize your adventure? y/n",
+        "a": ["y","n"]
+      },
+      {
+        "q": "What is your name brave adventurer?",
+        "game_var": "player_name"
+      },
+      {
+        "q": "{player_name}, how will you vanquish your foes? {character_classes[1]}",
+        "a": "{character_classes[0]}",
+        "game_var": "player_class"
+      },
+      {
+        "q": "{player_name}, {player_class[desc]} Magnificent! What meridiem is it? am/pm",
+        "a": ["am","pm"],
+        "game_var": "game_meridiem"
+      },
+      {
+        "q": "It is time to get going! What hour of the day is it? 1-12",
+        "a": ["1","2","3","4","5","6","7","8","9","10","12"],
+        "game_var": "game_time"
+      }
+    ],
+    "init_help": [
+      "Available commands:",
+      "Game is currently initializing, commands limited. Follow screen prompts.",
+      "  help        - Show this help message",
+      "  reset       - Reset the game, clearing all data",
+      "  credits     - Show credits"
+    ]
+  },
   "character_classes": {
     "sword": {
       "class_name": "Warrior",
@@ -51,5 +57,13 @@
       "equipment": ["Silken Robe", "Magical Staff", "Holy Symbol"],
       "desc": "a wise Sorcerer wielding the elemental powers."
     }
-  }
+  },
+  "help": [
+    "Available commands:",
+    "  help        - Show this help message",
+    "  reset       - Reset the game clearing all data",
+    "  inventory   - Show your inventory",
+    "  credits     - Show credits"
+  ],
+  "credits": "engine.py 0.9.0 - Pythonic Games© - 1991 "
 }
