@@ -5,6 +5,7 @@ try:
 except:
     pass
 
+
 class GameState:
     def __init__(self):
         self.initialized = False
@@ -20,9 +21,9 @@ class GameState:
 
     def run_intro(self):
         return "\n".join(
-            ["engine.py 0.9.0 - Pythonic Games© - 1991\n\n"]+
-            GAME_DATA.get("game_intro")+
-            [GAME_DATA.get("game_init").get("steps")[0].get("q")]
+            ["engine.py 0.9.0 - Pythonic Games© - 1991"] + [" "] + [" "]
+            + GAME_DATA.get("game_intro")
+            + [GAME_DATA.get("game_init").get("steps")[0].get("q")]
         )
 
     def initialize(self, cmd):
