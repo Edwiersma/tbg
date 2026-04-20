@@ -1,56 +1,58 @@
 {
   "game_intro": [
-    "Welcome <purple>adventurer</purple>, to <orange>DUNGEON CRAWL</orange>.",
+    "Welcome <purple>adventurer</purple>, to <orange>DUNGEON CRAWL</orange>!",
     "A realm of darkness rendered in flickering characters and unforgiving logic.",
     "Beneath you lies a <dim>labyrinth</dim> of ancient stone, where every step deeper into the grid may bring <green>fortune</green>... or <red>doom</red>.",
     "<green>Treasures</green> glint in the shadows, <red>monsters</red> lurk beyond the limits of your sight,",
-    "and survival depends not on reflex, but on wit and <yellow>command</yellow>. Type carefully the dungeon listens.",
-    " "
+    "and survival depends not on reflex, but on wit and <yellow>command</yellow>.",
+    "<yellow>Type</yellow> carefully the <orange>DUNGEON</orange> listens."
   ],
-  "player_init": {
-    "steps": [
-      {
-        "q": "Are you sure you want to <yellow>initialize</yellow> your adventure? y/n",
-        "a": ["y","n"]
-      },
-      {
-        "q": "What is your <purple>name</purple> brave adventurer?",
-        "game_var": "player.player_name"
-      },
-      {
-        "q": "{player.player_name}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
-        "a": "{character_classes[0]}",
-        "game_var": "player_class"
-      }
-    ],
-    "help": [
-      "Available commands:",
-      "Game is currently initializing, commands limited. Follow screen prompts.",
-      "  help        - Show this help message",
-      "  reset       - Reset the game, clearing all data",
-      "  credits     - Show credits"
-    ]
-  },
-  "game_init": {
-    "steps": [
-      {
-        "q": "{player.player_name}, {player.player_class[desc]} Magnificent! What meridiem is it? am/pm",
-        "a": ["am","pm"],
-        "game_var": "game_meridiem"
-      },
-      {
-        "q": "It is time to get going! What <yellow>hour</yellow> of the <yellow>day</yellow> is it? 1-12",
-        "a": ["1","2","3","4","5","6","7","8","9","10","12"],
-        "game_var": "game_time"
-      }
-    ],
-    "help": [
-      "Available commands:",
-      "Game is currently initializing, commands limited. Follow screen prompts.",
-      "  help        - Show this help message",
-      "  reset       - Reset the game, clearing all data",
-      "  credits     - Show credits"
-    ]
+  "init": {
+    "player_init": {
+      "steps": [
+        {
+          "q": "Are you sure you want to <yellow>initialize</yellow> your adventure? <yellow>y/n</yellow>",
+          "a": ["y","n"]
+        },
+        {
+          "q": "What is your <purple>name</purple> brave adventurer?",
+          "game_var": "player.player_name"
+        },
+        {
+          "q": "{player.player_name}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
+          "a": "{character_classes[0]}",
+          "game_var": "player_class"
+        }
+      ],
+      "help": [
+        "Available commands:",
+        "Game is currently initializing, commands limited. Follow screen prompts.",
+        "  help        - Show this help message",
+        "  reset       - Reset the game, clearing all data",
+        "  credits     - Show credits"
+      ]
+    },
+    "game_init": {
+      "steps": [
+        {
+          "q": "{player.player_name}, {player.player_class[desc]} Magnificent!\nWhat meridiem is it? <yellow>am/pm</yellow>",
+          "a": ["am", "pm"],
+          "game_var": "game_meridiem"
+        },
+        {
+          "q": "It is time to get going! What <yellow>hour</yellow> of the <yellow>day</yellow> is it? <yellow>1-12</yellow>",
+          "a": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "12"],
+          "game_var": "game_time"
+        }
+      ],
+      "help": [
+        "Available commands:",
+        "Game is currently initializing, commands limited. Follow screen prompts.",
+        "  help        - Show this help message",
+        "  reset       - Reset the game, clearing all data",
+        "  credits     - Show credits"
+      ]
+    }
   },
   "character_classes": {
     "warrior": {

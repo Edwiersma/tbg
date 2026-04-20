@@ -42,7 +42,8 @@ handler.engine_interface = game.handler_interface
 
 
 def intro():
-    return game.run_intro()
+    first_question = next(iter(GAME_DATA["init"].values()))["steps"][0]["q"]
+    return f"{game.run_intro()}\n\n{first_question}"
 
 
 def send_cmd(cmd: str) -> str:
@@ -50,10 +51,11 @@ def send_cmd(cmd: str) -> str:
 
 
 if DEBUG:
+    pass
     print(intro())
     print(send_cmd("y"))
     print(send_cmd("Bob"))
     print(send_cmd("sword"))
     print(send_cmd("am"))
     print(send_cmd("8"))
-    print(game.__dict__)
+    # print(game.__dict__)

@@ -9,28 +9,29 @@ except:
 class GameState:
     def __init__(self):
         self.player = Player()
-        self.initialized = False
+        self.initialized = {k: False for k in GAME_DATA.get("init").keys()}
         self.init_step = 0
         self.override_commands = ["help", "reset", "credits"]
 
     def handler_interface(self, cmd: str) -> str:
-        if not self.player.initialized:
-            return self.initialize("player_init", cmd)
-        if not self.initialized:
-            return self.initialize("game_init", cmd)
+        for init_set, initialized in self.initialized.items():
+            print(f"Set {init_set} initialized: {initialized}")
+            if not initialized:
+                return self.initialize(init_set, cmd)
         return str(self.__dict__)
 
     def run_intro(self):
         return "\n".join(
             [GAME_DATA.get("credits")] + ["\n\n"]
             + GAME_DATA.get("game_intro")
-            + [GAME_DATA.get("game_init").get("steps")[0].get("q")]
         )
 
-    def initialize(self, init_set, cmd):
-        steps    = GAME_DATA.get(init_set).get("steps")
+    def initialize(self, init_set, cmd=None):
+        steps    = GAME_DATA.get("init").get(init_set).get("steps")
         step     = steps[self.init_step]
         a_required = step.get("a", None)
+        if not cmd:
+            self.init_step = 0
 
         if a_required:
             cmd = cmd.lower()
@@ -53,14 +54,10 @@ class GameState:
                 print("'gamevar' Override applied")
 
         self.init_step += 1
-        if self.init_step == len(steps):
-            if init_set == "player_init":
-                self.player.initialized = True
-                self.init_step = 0
-                return self.handler_interface(cmd)
-            else:
-                self.initialized = True
-                return self.handler_interface(cmd)
+        if self.init_step >= len(steps):
+            self.initialized[init_set] = True
+            self.init_step = 0
+            return self.handler_interface(cmd)
 
         return steps[self.init_step].get("q").format_map(self.__dict__)
 
