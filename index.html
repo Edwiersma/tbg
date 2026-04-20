@@ -49,7 +49,6 @@
       line-height: 1.45;
       font-size: 0.9rem;
       overflow-y: auto;
-      height = 400px;
       max-height: 620px;
       flex: 1;
     }
@@ -114,6 +113,39 @@
     let pyodide     = null;
     let engineReady = false;
 
+    /* ── Tag color parser ──────────────────────────────────────────── */
+
+    const TAG_COLORS = {
+      red:    '#ff0000',
+      green:  '#1CD649',
+      yellow: '#ffd700',
+      blue:   '#6af',
+      white:  '#e5e5e5',
+      dim:    '#888',
+      bold:   null,   // bold uses font-weight, not color
+    };
+
+    function parseTags(text) {
+      // Escape HTML special chars first so raw text is safe
+      text = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Replace escaped tags with styled spans
+      Object.entries(TAG_COLORS).forEach(([tag, color]) => {
+        const open  = new RegExp(`&lt;${tag}&gt;`, 'g');
+        const close = new RegExp(`&lt;/${tag}&gt;`, 'g');
+        const style = tag === 'bold'
+          ? 'font-weight:bold'
+          : `color:${color}`;
+        text = text.replace(open,  `<span style="${style}">`);
+        text = text.replace(close, `</span>`);
+      });
+
+      return text;
+    }
+
     /* ── Rendering ─────────────────────────────────────────────────── */
 
     function renderLines() {
@@ -121,7 +153,7 @@
       lines.slice(-MAX_LINES).forEach(l => {
         const span = document.createElement('span');
         span.className = 'line' + (l.cls ? ' ' + l.cls : '');
-        span.textContent = l.text;
+        span.innerHTML = parseTags(l.text);  // innerHTML to render color spans
         outputEl.appendChild(span);
       });
       outputEl.scrollTop = outputEl.scrollHeight;
@@ -142,101 +174,86 @@
       if (lines.length > MAX_LINES) lines = lines.slice(-MAX_LINES);
     }
 
+    /* ── Module loader ─────────────────────────────────────────────── */
+
+    async function loadPythonModule(path) {
+      const src = await fetch(path).then(r => r.text());
+      await pyodide.runPythonAsync(src);
+    }
+
     /* ── Boot sequence ─────────────────────────────────────────────── */
 
-    const OS_HEADER = [
-      'Microsoft Windows [Version 10.0.22631.6199]',
-      '(c) Microsoft Corporation. All rights reserved.',
-      '',
-      'C:\\Users\\edwiersma>dcrawl.exe',
-      '',
-    ];
+    async function boot() {
+      inputEl.disabled = true;
 
+      // Start Pyodide download immediately in the background
+      const pyodidePromise = loadPyodide();
 
+      // 1. OS header + launch line
+      [
+        'Microsoft Windows [Version 10.0.22631.6199]',
+        '(c) Microsoft Corporation. All rights reserved.',
+        '',
+        'C:\\Users\\edwiersma>dcrawl.exe',
+      ].forEach(t => addLine(t));
+      renderLines();
 
-    // 1. Print OS header + launch command
-    const BOOT_LINES = [
-      'DCRAWL v0.1, Apr  10 2026, 17:50:34) [MSC v.1938 64 bit (AMD64)] on win32',
-      'Type "help", "copyright", "credits" or "license" for more information.',
-      '',
-    ];
-async function boot() {
-  inputEl.disabled = true;
+      await new Promise(r => setTimeout(r, 300));
 
-  // Start Pyodide download immediately in the background
-  const pyodidePromise = loadPyodide();
+      // 2. Animated loading bar — Pyodide downloads concurrently
+      await runLoadingBar(addLine, renderLines);
 
-  // 1. OS header + launch line
-  [
-    'Microsoft Windows [Version 10.0.22631.6199]',
-    '(c) Microsoft Corporation. All rights reserved.',
-    '',
-    'C:\\Users\\edwiersma>dcrawl.exe',
-  ].forEach(t => addLine(t));
-  renderLines();
+      // 3. DCRAWL info after bar
+      addLine('DCRAWL v0.1, Apr  10 2026, 17:50:34) [MSC v.1938 64 bit (AMD64)] on win32');
+      addLine('Type <red>"help"</red> for more information.');
+      addLine('');
+      renderLines();
 
-  await new Promise(r => setTimeout(r, 300));
+      // 4. Await Pyodide — may already be done by now
+      addLine('Loading Python engine...', 'dim');
+      renderLines();
 
-  // 2. Animated loading bar — Pyodide downloads concurrently
-  await runLoadingBar(addLine, renderLines);
+      try {
+        pyodide = await pyodidePromise;
 
-  // 3. DCRAWL info after bar
-  addLine('DCRAWL v0.1, Apr  10 2026, 17:50:34) [MSC v.1938 64 bit (AMD64)] on win32');
-  addLine('Type "help", "copyright", "credits" or "license" for more information.');
-  addLine('');
-  renderLines();
+        // Load game data
+        const response = await fetch('./data/data.json');
+        const data = await response.json();
+        pyodide.globals.set('GAME_DATA', pyodide.toPy(data));
 
-// 4. Await Pyodide — may already be done by now
-addLine('Loading Python engine...', 'dim');
-renderLines();
+        // Load engine components in dependency order
+        await loadPythonModule('./cmd.py');
+        await loadPythonModule('./engine.py');
+        await loadPythonModule('./boot.py');
 
-async function loadPythonModule(path) {
-  const src = await fetch(path).then(r => r.text());
-  await pyodide.runPythonAsync(src);
-}
+        engineReady = true;
 
-try {
-  pyodide = await pyodidePromise;
+        const loadingLine = lines.findLast(l => l.text === 'Loading Python engine...');
+        if (loadingLine) loadingLine.text = 'Python engine ready.';
 
-  // Load in dependency order — each file can use what was loaded before it
-  // Load Game Data
-  const response = await fetch('./data/data.json');
-  const data = await response.json();
-  // Make it available in Python as a dictionary
-  pyodide.globals.set('GAME_DATA', pyodide.toPy(data));
-  // Load Engine Components
-  await loadPythonModule('./cmd.py');
-  await loadPythonModule('./engine.py');
-  await loadPythonModule('./boot.py');
+      } catch (err) {
+        const loadingLine = lines.findLast(l => l.text === 'Loading Python engine...');
+        if (loadingLine) {
+          loadingLine.text = 'Engine failed to load: ' + err.message;
+          loadingLine.cls  = 'err';
+        }
+      }
 
-  engineReady = true;
+      addLine('');
+      renderLines();
 
-  const loadingLine = lines.findLast(l => l.text === 'Loading Python engine...');
-  if (loadingLine) loadingLine.text = 'Python engine ready.';
+      const intro = await pyodide.runPythonAsync('intro()');
+      for (const line of String(intro).split('\n')) {
+        addLine(line);
+        renderLines();
+        await new Promise(r => setTimeout(r, 350));
+      }
 
-} catch (err) {
-  const loadingLine = lines.findLast(l => l.text === 'Loading Python engine...');
-  if (loadingLine) {
-    loadingLine.text = 'Engine failed to load: ' + err.message;
-    loadingLine.cls  = 'err';
-  }
-}
+      inputEl.disabled = false;
+      inputEl.focus();
+    }
 
-  addLine('');
-  renderLines();
-
-  const intro = await pyodide.runPythonAsync('intro()');
-  for (const line of String(intro).split('\n')) {
-  addLine(line);
-  renderLines();
-  await new Promise(r => setTimeout(r, 350)); // delay per line in ms
-}
-
-  inputEl.disabled = false;
-  inputEl.focus();
-}
-
-    /* ── Command handler — delegates to handle_command() in engine.py  */
+    /* ── Command handler — delegates to send_cmd() in boot.py ──────── */
 
     async function handleCommand(raw) {
       const cmd = raw.trim();
@@ -251,7 +268,6 @@ try {
       }
 
       try {
-        // Safely pass the command string into Python
         pyodide.globals.set('_cmd_input', cmd);
         const result = await pyodide.runPythonAsync('send_cmd(_cmd_input)');
 
@@ -260,13 +276,16 @@ try {
           return;
         }
 
-        String(result).split('\n').forEach(line => addLine(line)); renderLines();
+        for (const line of String(result).split('\n')) {
+          addLine(line);
+          renderLines();
+          await new Promise(r => setTimeout(r, 350));
+        }
 
       } catch (err) {
         addLine('Engine error: ' + err.message, 'err');
+        renderLines();
       }
-
-      renderLines();
     }
 
     /* ── Input listener ────────────────────────────────────────────── */

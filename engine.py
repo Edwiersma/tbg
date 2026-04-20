@@ -21,7 +21,7 @@ class GameState:
 
     def run_intro(self):
         return "\n".join(
-            ["engine.py 0.9.0 - Pythonic Games© - 1991"] + [" "] + [" "]
+            ["<green>engine.py 0.9.0</green> - <blue>Pythonic Games©</blue> - <yellow>1991</yellow>"] + [" "] + [" "]
             + GAME_DATA.get("game_intro")
             + [GAME_DATA.get("game_init").get("steps")[0].get("q")]
         )
