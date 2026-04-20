@@ -1,5 +1,6 @@
 import json
 import sys
+
 DEBUG = sys.platform != 'emscripten'
 
 if DEBUG:
@@ -13,15 +14,26 @@ class DCRAWL(GameState):
     def __init__(self):
         super().__init__()
         self.character_classes = [
-            GAME_DATA["character_classes"].keys(), "/".join(GAME_DATA["character_classes"].keys())
+            list(GAME_DATA["character_classes"].keys()),
+            "/".join(v["class_weapon"] for v in GAME_DATA["character_classes"].values())
         ]
 
     def init_var_override(self, cmd, game_var):
         if game_var == "player_class":
-            self.player_class = GAME_DATA.get("character_classes").get(cmd)
-        else:
-            return False
-        return True
+            # Match the typed weapon back to a class key
+            matched = [
+                k for k, v in GAME_DATA["character_classes"].items()
+                if cmd.lower() in v["class_weapon"].lower()
+            ]
+            if not matched:
+                print(f"No class matched for input: {cmd}")
+                return False
+            class_key = matched[0]
+            # Store the full class dict so {player_class[desc]} resolves via format_map
+            self.player_class = GAME_DATA["character_classes"][class_key]
+            self.player.player_class = self.player_class
+            return True
+        return False
 
 
 handler = CommandHandler()
@@ -40,5 +52,8 @@ def send_cmd(cmd: str) -> str:
 if DEBUG:
     print(intro())
     print(send_cmd("y"))
-    print(send_cmd("Name"))
+    print(send_cmd("Bob"))
     print(send_cmd("sword"))
+    print(send_cmd("am"))
+    print(send_cmd("8"))
+    print(game.__dict__)

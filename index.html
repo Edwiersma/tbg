@@ -20,6 +20,7 @@
     .window {
       width: 50%;
       max-width: 95%;
+      min-width: 720px;
       max-height: 720px;
       background-color: #0c0c0c;
       border-radius: 6px;
@@ -43,7 +44,7 @@
 
     #output {
       padding: 14px 16px;
-      color: #e5e5e5;
+      color: #ddd;
       white-space: pre-wrap;
       word-break: break-word;
       line-height: 1.45;
@@ -79,10 +80,10 @@
       background: transparent;
       border: none;
       outline: none;
-      color: #e5e5e5;
+      color: #fee;
       font-family: Consolas, "Courier New", monospace;
       font-size: 0.9rem;
-      caret-color: #e5e5e5;
+      caret-color: #fee;
     }
   </style>
 </head>
@@ -116,11 +117,12 @@
     /* ── Tag color parser ──────────────────────────────────────────── */
 
     const TAG_COLORS = {
-      red:    '#ff0000',
-      green:  '#1CD649',
-      yellow: '#ffd700',
-      blue:   '#6af',
-      white:  '#e5e5e5',
+      red:    '#e00',
+      green:  '#0d0',
+      yellow: '#fc3',
+      purple: '#A09',
+      orange: '#d70',
+      blue:   '#08f',
       dim:    '#888',
       bold:   null,   // bold uses font-weight, not color
     };

@@ -1,39 +1,50 @@
 {
   "game_intro": [
-    "Welcome adventurer, to DUNGEON CRAWL.",
+    "Welcome <purple>adventurer</purple>, to <orange>DUNGEON CRAWL</orange>.",
     "A realm of darkness rendered in flickering characters and unforgiving logic.",
-    "Beneath you lies a labyrinth of ancient stone, where every step deeper into the grid may bring fortune... or doom.",
-    "Treasures glint in the shadows, monsters lurk beyond the limits of your sight,",
-    "and survival depends not on reflex, but on wit and command. Type carefully the dungeon listens.",
+    "Beneath you lies a <dim>labyrinth</dim> of ancient stone, where every step deeper into the grid may bring <green>fortune</green>... or <red>doom</red>.",
+    "<green>Treasures</green> glint in the shadows, <red>monsters</red> lurk beyond the limits of your sight,",
+    "and survival depends not on reflex, but on wit and <yellow>command</yellow>. Type carefully the dungeon listens.",
     " "
   ],
-  "game_init": {
+  "player_init": {
     "steps": [
       {
-        "q": "Are you sure you want to initialize your adventure? y/n",
+        "q": "Are you sure you want to <yellow>initialize</yellow> your adventure? y/n",
         "a": ["y","n"]
       },
       {
-        "q": "What is your name brave adventurer?",
-        "game_var": "player_name"
+        "q": "What is your <purple>name</purple> brave adventurer?",
+        "game_var": "player.player_name"
       },
       {
-        "q": "{player_name}, how will you vanquish your foes? {character_classes[1]}",
+        "q": "{player.player_name}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
         "a": "{character_classes[0]}",
         "game_var": "player_class"
-      },
+      }
+    ],
+    "help": [
+      "Available commands:",
+      "Game is currently initializing, commands limited. Follow screen prompts.",
+      "  help        - Show this help message",
+      "  reset       - Reset the game, clearing all data",
+      "  credits     - Show credits"
+    ]
+  },
+  "game_init": {
+    "steps": [
       {
-        "q": "{player_name}, {player_class[desc]} Magnificent! What meridiem is it? am/pm",
+        "q": "{player.player_name}, {player.player_class[desc]} Magnificent! What meridiem is it? am/pm",
         "a": ["am","pm"],
         "game_var": "game_meridiem"
       },
       {
-        "q": "It is time to get going! What hour of the day is it? 1-12",
+        "q": "It is time to get going! What <yellow>hour</yellow> of the <yellow>day</yellow> is it? 1-12",
         "a": ["1","2","3","4","5","6","7","8","9","10","12"],
         "game_var": "game_time"
       }
     ],
-    "init_help": [
+    "help": [
       "Available commands:",
       "Game is currently initializing, commands limited. Follow screen prompts.",
       "  help        - Show this help message",
@@ -42,20 +53,23 @@
     ]
   },
   "character_classes": {
-    "sword": {
-      "class_name": "Warrior",
+    "warrior": {
+      "class_name": "<orange>Warrior</orange>",
+      "class_weapon": "<orange>Sword</orange>",
       "equipment": ["Heavy Armor", "Sword", "Shield"],
-      "desc": "a mighty Warrior with Sword and Shield."
+      "desc": "a mighty <orange>Warrior</orange> with Sword and Shield."
     },
-    "bow": {
-      "class_name": "Ranger",
+    "ranger": {
+      "class_name": "<green>Ranger</green>",
+      "class_weapon": "<green>Bow</green>",
       "equipment": ["Leather Armor", "Bow", "Arrow Quiver"],
-      "desc": "a nimble Ranger, danger at a distance."
+      "desc": "a nimble <green>Ranger</green>, danger at a distance."
     },
-    "magic": {
-      "class_name": "Sorcerer",
+    "sorcerer": {
+      "class_name": "<blue>Sorcerer</blue>",
+      "class_weapon": "<blue>Magic</blue>",
       "equipment": ["Silken Robe", "Magical Staff", "Holy Symbol"],
-      "desc": "a wise Sorcerer wielding the elemental powers."
+      "desc": "a wise <blue>Sorcerer</blue> wielding the elemental powers."
     }
   },
   "help": [
@@ -65,5 +79,5 @@
     "  inventory   - Show your inventory",
     "  credits     - Show credits"
   ],
-  "credits": "engine.py 0.9.0 - Pythonic Games© - 1991 "
+  "credits": "<green>engine.py 0.9.0</green> - <blue>Pythonic Games©</blue> - <yellow>1991</yellow>"
 }
