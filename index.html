@@ -44,7 +44,7 @@
 
     #output {
       padding: 14px 16px;
-      color: #ddd;
+      color: #fee;
       white-space: pre-wrap;
       word-break: break-word;
       line-height: 1.45;
@@ -148,7 +148,7 @@
       return text;
     }
 
-    /* ── Rendering ─────────────────────────────────────────────────── */
+    /* Rendering */
 
     function renderLines() {
       outputEl.innerHTML = '';
@@ -161,12 +161,6 @@
       outputEl.scrollTop = outputEl.scrollHeight;
     }
 
-    /**
-     * addLine(text, cls, ref)
-     *
-     * When `ref` is supplied it is pushed directly so loadingbar.js
-     * can mutate the object in-place for the animated bar.
-     */
     function addLine(text, cls, ref) {
       if (ref) {
         lines.push(ref);
@@ -176,14 +170,14 @@
       if (lines.length > MAX_LINES) lines = lines.slice(-MAX_LINES);
     }
 
-    /* ── Module loader ─────────────────────────────────────────────── */
+    /* Module loader */
 
     async function loadPythonModule(path) {
       const src = await fetch(path).then(r => r.text());
       await pyodide.runPythonAsync(src);
     }
 
-    /* ── Boot sequence ─────────────────────────────────────────────── */
+    /* Boot sequence */
 
     async function boot() {
       inputEl.disabled = true;
@@ -245,17 +239,16 @@
       renderLines();
 
       const intro = await pyodide.runPythonAsync('intro()');
-      for (const line of String(intro).split('\n')) {
-        addLine(line);
-        renderLines();
-        await new Promise(r => setTimeout(r, 350));
-      }
-
+        for (const line of String(intro).split('\n')) {
+          addLine(line === '' ? ' ' : line);
+          renderLines();
+          await new Promise(r => setTimeout(r, 350));
+        }
       inputEl.disabled = false;
       inputEl.focus();
     }
 
-    /* ── Command handler — delegates to send_cmd() in boot.py ──────── */
+    /* Command handler — delegates to send_cmd() in boot.py */
 
     async function handleCommand(raw) {
       const cmd = raw.trim();
@@ -279,7 +272,7 @@
         }
 
         for (const line of String(result).split('\n')) {
-          addLine(line);
+          addLine(line === '' ? ' ' : line);
           renderLines();
           await new Promise(r => setTimeout(r, 350));
         }
@@ -290,7 +283,7 @@
       }
     }
 
-    /* ── Input listener ────────────────────────────────────────────── */
+    /* Input listener */
 
     inputEl.addEventListener('keydown', e => {
       if (e.key === 'Enter') {

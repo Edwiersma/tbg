@@ -81,5 +81,5 @@
     "  inventory   - Show your inventory",
     "  credits     - Show credits"
   ],
-  "credits": "<green>engine.py 0.9.0</green> - <blue>Pythonic Games©</blue> - <yellow>1991</yellow>"
+  "credits": "<red>engine.py 0.9.0</red> - <purple>Pythonic Games©</purple> - <blue>1991</blue>"
 }

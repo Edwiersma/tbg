@@ -1,5 +1,6 @@
 try:
     import json
+
     with open('data/data.json') as json_file:
         GAME_DATA = json.load(json_file)
 except:
@@ -22,13 +23,12 @@ class GameState:
 
     def run_intro(self):
         return "\n".join(
-            [GAME_DATA.get("credits")] + ["\n\n"]
-            + GAME_DATA.get("game_intro")
+            [f"{GAME_DATA.get('credits')}\n\n"] + GAME_DATA.get("game_intro")
         )
 
     def initialize(self, init_set, cmd=None):
-        steps    = GAME_DATA.get("init").get(init_set).get("steps")
-        step     = steps[self.init_step]
+        steps = GAME_DATA.get("init").get(init_set).get("steps")
+        step = steps[self.init_step]
         a_required = step.get("a", None)
         if not cmd:
             self.init_step = 0
