@@ -16,7 +16,7 @@
         },
         {
           "q": "What is your <purple>name</purple> brave adventurer?",
-          "game_var": "player.player_name"
+          "game_var": "player_name"
         },
         {
           "q": "{player.player_name}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
@@ -59,19 +59,19 @@
       "class_name": "<orange>Warrior</orange>",
       "class_weapon": "<orange>Sword</orange>",
       "equipment": ["Heavy Armor", "Sword", "Shield"],
-      "desc": "a mighty <orange>Warrior</orange> with Sword and Shield."
+      "desc": "a mighty <orange>Warrior</orange> with <green>Sword</green> and <green>Shield</green>."
     },
     "ranger": {
       "class_name": "<green>Ranger</green>",
       "class_weapon": "<green>Bow</green>",
-      "equipment": ["Leather Armor", "Bow", "Arrow Quiver"],
+      "equipment": ["<green>Leather Armor</green>", "<green>Bow</green>", "<green>Arrow Quiver</green>"],
       "desc": "a nimble <green>Ranger</green>, danger at a distance."
     },
     "sorcerer": {
       "class_name": "<blue>Sorcerer</blue>",
       "class_weapon": "<blue>Magic</blue>",
-      "equipment": ["Silken Robe", "Magical Staff", "Holy Symbol"],
-      "desc": "a wise <blue>Sorcerer</blue> wielding the elemental powers."
+      "equipment": ["<green>Silken Robe</green>", "<green>Magical Staff</green>", "<green>Holy Symbol</green>"],
+      "desc": "a wise <blue>Sorcerer</blue> wielding the <blue>elemental powers</blue>."
     }
   },
   "help": [

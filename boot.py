@@ -30,9 +30,12 @@ class DCRAWL(GameState):
                 return False
             class_key = matched[0]
             # Store the full class dict so {player_class[desc]} resolves via format_map
-            self.player_class = GAME_DATA["character_classes"][class_key]
-            self.player.player_class = self.player_class
+            self.player.player_class = GAME_DATA["character_classes"][class_key]
             return True
+        elif game_var == "player_name":
+            self.player.player_name = f"<purple>{cmd}</purple>"
+            return True
+
         return False
 
 
@@ -51,7 +54,6 @@ def send_cmd(cmd: str) -> str:
 
 
 if DEBUG:
-    pass
     print(intro())
     print(send_cmd("y"))
     print(send_cmd("Bob"))

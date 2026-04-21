@@ -48,7 +48,7 @@ class GameState:
         game_var = step.get("game_var", None)
         if game_var:
             if not self.init_var_override(cmd, game_var):
-                print("No 'gamevar' Override — using setattr")
+                print("No 'gamevar'({game_var}) Override — using setattr")
                 self._set_nested(game_var, cmd)
             else:
                 print("'gamevar' Override applied")
