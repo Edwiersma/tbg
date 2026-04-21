@@ -56,8 +56,9 @@ def send_cmd(cmd: str) -> str:
 if DEBUG:
     print(intro())
     print(send_cmd("y"))
+    print(send_cmd("2"))
     print(send_cmd("Bob"))
     print(send_cmd("sword"))
-    print(send_cmd("am"))
-    print(send_cmd("8"))
+    # print(send_cmd("am"))
+    # print(send_cmd("8"))
     # print(game.__dict__)

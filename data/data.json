@@ -8,12 +8,28 @@
     "<yellow>Type</yellow> carefully the <orange>DUNGEON</orange> listens."
   ],
   "init": {
+    "player_count": {
+        "steps": [
+            {
+                "q": "Are you sure you want to <yellow>initialize</yellow> your adventure? <yellow>y/n</yellow>",
+                "a": ["y", "n"]
+            },
+            {
+                "q": "How many adventurers are <yellow>playing</yellow>? <yellow>1-6</yellow>",
+                "a": ["1", "2", "3", "4", "5", "6"],
+                "game_var": "player_count"
+            }
+        ],
+        "help": [
+        "Available commands:",
+        "Game is currently initializing, commands limited. Follow screen prompts.",
+        "  help        - Show this help message",
+        "  reset       - Reset the game, clearing all data",
+        "  credits     - Show credits"
+      ]
+    },
     "player_init": {
       "steps": [
-        {
-          "q": "Are you sure you want to <yellow>initialize</yellow> your adventure? <yellow>y/n</yellow>",
-          "a": ["y","n"]
-        },
         {
           "q": "What is your <purple>name</purple> brave adventurer?",
           "game_var": "player_name"
