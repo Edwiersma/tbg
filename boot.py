@@ -49,12 +49,12 @@ def send_cmd(cmd: str) -> str:
 
 if DEBUG:
     print(intro())
-    print(send_cmd("y"))
-    print(send_cmd("2"))
-    print(send_cmd("Bob"))
-    print(send_cmd("Bow"))
-    print(send_cmd("James"))
-    print(send_cmd("Magic"))
+    print(send_cmd("n"))
+    # print(send_cmd("2"))
+    # print(send_cmd("Bob"))
+    # print(send_cmd("Bow"))
+    # print(send_cmd("James"))
+    # print(send_cmd("Magic"))
     # print(send_cmd("am"))
     # print(send_cmd("8"))
     # print(game.__dict__)

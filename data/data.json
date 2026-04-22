@@ -12,7 +12,11 @@
         "steps": [
             {
                 "q": "Are you sure you want to <yellow>initialize</yellow> your adventure? <yellow>y/n</yellow>",
-                "a": ["y", "n"]
+                "a": ["y"],
+                "r": {
+                  "y": ["Many dangers await!", "No time to waste!", "Let's crawl some dungeon!"],
+                  "n": "Maybe next time..."
+                }
             },
             {
                 "q": "How many adventurers are <yellow>playing</yellow>? <yellow>1-6</yellow>",
