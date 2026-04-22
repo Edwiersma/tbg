@@ -18,8 +18,8 @@ class DCRAWL(GameState):
             "/".join(v["class_weapon"] for v in GAME_DATA["character_classes"].values())
         ]
 
-    def init_var_override(self, cmd, game_var):
-        if game_var == "player_class":
+    def fnc_set_player_class(self, cmd):
+            print(f"Set  '{self.player.player_name}' Class to {cmd}")
             # Match the typed weapon back to a class key
             matched = [
                 k for k, v in GAME_DATA["character_classes"].items()
@@ -27,16 +27,9 @@ class DCRAWL(GameState):
             ]
             if not matched:
                 print(f"No class matched for input: {cmd}")
-                return False
             class_key = matched[0]
             # Store the full class dict so {player_class[desc]} resolves via format_map
             self.player.player_class = GAME_DATA["character_classes"][class_key]
-            return True
-        elif game_var == "player_name":
-            self.player.player_name = f"<purple>{cmd}</purple>"
-            return True
-
-        return False
 
 
 handler = CommandHandler()
@@ -50,6 +43,7 @@ def intro():
 
 
 def send_cmd(cmd: str) -> str:
+    print(f"Send Command: {cmd}")
     return handler.handle_command(cmd)
 
 
@@ -58,7 +52,9 @@ if DEBUG:
     print(send_cmd("y"))
     print(send_cmd("2"))
     print(send_cmd("Bob"))
-    print(send_cmd("sword"))
+    print(send_cmd("Bow"))
+    print(send_cmd("James"))
+    print(send_cmd("Magic"))
     # print(send_cmd("am"))
     # print(send_cmd("8"))
     # print(game.__dict__)

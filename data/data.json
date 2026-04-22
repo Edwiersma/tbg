@@ -17,7 +17,7 @@
             {
                 "q": "How many adventurers are <yellow>playing</yellow>? <yellow>1-6</yellow>",
                 "a": ["1", "2", "3", "4", "5", "6"],
-                "game_var": "player_count"
+                "game_fnc": "fnc_set_player_count"
             }
         ],
         "help": [
@@ -31,13 +31,17 @@
     "player_init": {
       "steps": [
         {
-          "q": "What is your <purple>name</purple> brave adventurer?",
-          "game_var": "player_name"
+          "q": "Adventurer {current_player_num} what is your <purple>name</purple> brave one?",
+          "game_fnc": "fnc_new_player"
         },
         {
           "q": "{player.player_name}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
           "a": "{character_classes[0]}",
-          "game_var": "player_class"
+          "game_fnc": "fnc_set_player_class"
+        },
+        {
+          "q": "{player.player_name}, {player.player_class[desc]} Magnificent! Are you sure of this? y/n",
+          "a": "y/n"
         }
       ],
       "help": [
@@ -51,7 +55,7 @@
     "game_init": {
       "steps": [
         {
-          "q": "{player.player_name}, {player.player_class[desc]} Magnificent!\nWhat meridiem is it? <yellow>am/pm</yellow>",
+          "q": "What meridiem is it? <yellow>am/pm</yellow>",
           "a": ["am", "pm"],
           "game_var": "game_meridiem"
         },
