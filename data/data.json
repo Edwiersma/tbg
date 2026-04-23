@@ -98,6 +98,22 @@
       "desc": "a wise <blue>Sorcerer</blue> wielding the <blue>elemental powers</blue>."
     }
   },
+  "object_classes": {
+      "game_object": {"_attr": ["name", "color"]},
+      "obj_name": {"parent_class": "game_object", "color": "purple"},
+      "location": {"parent_class": "game_object", "color": "dim"},
+      "item": {"parent_class": "game_object", "color": "green"},
+      "weapon": {"_attr": ["damage", "damage_type", "slot"], "parent_class": "item"},
+      "armor": {"_attr": ["armor_value", "armor_type", "slot"], "parent_class": "item"},
+      "player_class": {"_attr": ["class_name", "class_weapon", "equipment", "desc"], "parent_class": "game_object"}
+  },
+  "object_definition":{
+      "labyrinth": {"name": "labyrinth", "object_class": "location"},
+      "sword_01": {"name": "sword", "object_class": "weapon"},
+      "sword_02": {"name": "+1 sword", "object_class": "weapon", "damage": 10, "damage_type": "slash", "slot": "1hand"},
+      "helm_01": {"name": "Leather Helmet", "object_class": "armor", "armor": 5, "armor_type": "leather", "slot": "head"},
+      "shield_01": {"name": "Buckler", "object_class": "armor", "armor": 15, "armor_type": "metal", "slot": "1hand"}
+  },
   "help": [
     "Available commands:",
     "  help        - Show this help message",
