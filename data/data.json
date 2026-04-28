@@ -2,7 +2,7 @@
   "game_intro": [
     "Welcome <purple>adventurer</purple>, to <orange>DUNGEON CRAWL</orange>!",
     "A realm of darkness rendered in flickering characters and unforgiving logic.",
-    "Beneath you lies a <dim>labyrinth</dim> of ancient stone, where every step deeper into the grid may bring <green>fortune</green>... or <red>doom</red>.",
+    "Beneath you lies a <o>labyrinth</o> of ancient stone, where every step deeper into the grid may bring <green>fortune</green>... or <red>doom</red>.",
     "<green>Treasures</green> glint in the shadows, <red>monsters</red> lurk beyond the limits of your sight,",
     "and survival depends not on reflex, but on wit and <yellow>command</yellow>.",
     "<yellow>Type</yellow> carefully the <orange>DUNGEON</orange> listens."
@@ -39,12 +39,12 @@
           "game_fnc": "fnc_new_player"
         },
         {
-          "q": "{player.player_name}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
+          "q": "{player.name}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
           "a": "{character_classes[0]}",
           "game_fnc": "fnc_set_player_class"
         },
         {
-          "q": "{player.player_name}, {player.player_class[desc]} Magnificent! Are you sure of this? y/n",
+          "q": "{player.name}, {player.player_class[desc]} Magnificent! Are you sure of this? y/n",
           "a": "y/n"
         }
       ],
@@ -78,41 +78,44 @@
       ]
     }
   },
-  "character_classes": {
-    "warrior": {
-      "class_name": "<orange>Warrior</orange>",
-      "class_weapon": "<orange>Sword</orange>",
-      "equipment": ["Heavy Armor", "Sword", "Shield"],
-      "desc": "a mighty <orange>Warrior</orange> with <green>Sword</green> and <green>Shield</green>."
-    },
-    "ranger": {
-      "class_name": "<green>Ranger</green>",
-      "class_weapon": "<green>Bow</green>",
-      "equipment": ["<green>Leather Armor</green>", "<green>Bow</green>", "<green>Arrow Quiver</green>"],
-      "desc": "a nimble <green>Ranger</green>, danger at a distance."
-    },
-    "sorcerer": {
-      "class_name": "<blue>Sorcerer</blue>",
-      "class_weapon": "<blue>Magic</blue>",
-      "equipment": ["<green>Silken Robe</green>", "<green>Magical Staff</green>", "<green>Holy Symbol</green>"],
-      "desc": "a wise <blue>Sorcerer</blue> wielding the <blue>elemental powers</blue>."
-    }
-  },
+  "character_classes": ["warrior", "ranger", "sorcerer"],
   "object_classes": {
-      "game_object": {"_attr": ["name", "color"]},
-      "obj_name": {"parent_class": "game_object", "color": "purple"},
-      "location": {"parent_class": "game_object", "color": "dim"},
-      "item": {"parent_class": "game_object", "color": "green"},
-      "weapon": {"_attr": ["damage", "damage_type", "slot"], "parent_class": "item"},
-      "armor": {"_attr": ["armor_value", "armor_type", "slot"], "parent_class": "item"},
-      "player_class": {"_attr": ["class_name", "class_weapon", "equipment", "desc"], "parent_class": "game_object"}
+      "GameObject": {"name": "default", "color": "dim"},
+      "ObjName": {"parent_class": "GameObject", "color": "purple"},
+      "Player": {"parent_class": "ObjName", "player_class": null,"inventory": []},
+      "Location": {"parent_class": "GameObject", "color": "dim"},
+      "Item": {"parent_class": "GameObject", "color": "green"},
+      "Weapon": {"parent_class": "Item", "damage": 0, "damage_type": null, "slot": null},
+      "Armor": {"parent_class": "Item", "armor_value": 0, "armor_type": null, "slot": null},
+      "PlayerClass": {"parent_class": "GameObject", "class_name": null, "class_weapon": null, "desc": null}
   },
-  "object_definition":{
-      "labyrinth": {"name": "labyrinth", "object_class": "location"},
-      "sword_01": {"name": "sword", "object_class": "weapon"},
-      "sword_02": {"name": "+1 sword", "object_class": "weapon", "damage": 10, "damage_type": "slash", "slot": "1hand"},
-      "helm_01": {"name": "Leather Helmet", "object_class": "armor", "armor": 5, "armor_type": "leather", "slot": "head"},
-      "shield_01": {"name": "Buckler", "object_class": "armor", "armor": 15, "armor_type": "metal", "slot": "1hand"}
+  "object_definition": {
+      "labyrinth": {"name": "labyrinth", "object_class": "Location"},
+      "sword_01": {"name": "sword", "object_class": "Weapon"},
+      "sword_02": {"name": "+1 sword", "object_class": "Weapon", "damage": 10, "damage_type": "slash", "slot": "1hand"},
+      "helm_01": {"name": "Leather Helmet", "object_class": "Armor", "armor": 5, "armor_type": "leather", "slot": "head"},
+      "shield_01": {"name": "Buckler", "object_class": "Armor", "armor": 15, "armor_type": "metal", "slot": "1hand"},
+      "warrior": {"object_class": "PlayerClass",
+        "name": "Warrior",
+        "color": "orange",
+        "class_weapon": "<orange>Sword</orange>",
+        "equipment": ["Heavy Armor", "Sword", "Shield"],
+        "desc": "a mighty <orange>Warrior</orange> with <green>Sword</green> and <green>Shield</green>."
+      },
+      "ranger": {"object_class": "PlayerClass",
+        "name": "Ranger",
+        "color": "green",
+        "class_weapon": "<green>Bow</green>",
+        "equipment": ["<green>Leather Armor</green>", "<green>Bow</green>", "<green>Arrow Quiver</green>"],
+        "desc": "a nimble <green>Ranger</green>, danger at a distance."
+      },
+      "sorcerer": {"object_class": "PlayerClass",
+        "name": "Sorcerer",
+        "color": "blue",
+        "class_weapon": "<blue>Magic</blue>",
+        "equipment": ["<green>Silken Robe</green>", "<green>Magical Staff</green>", "<green>Holy Symbol</green>"],
+        "desc": "a wise <blue>Sorcerer</blue> wielding the <blue>elemental powers</blue>."
+      }
   },
   "help": [
     "Available commands:",

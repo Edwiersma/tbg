@@ -13,10 +13,8 @@ if DEBUG:
 class DCRAWL(GameState):
     def __init__(self):
         super().__init__()
-        self.character_classes = [
-            list(GAME_DATA["character_classes"].keys()),
-            "/".join(v["class_weapon"] for v in GAME_DATA["character_classes"].values())
-        ]
+        self.character_classes = (GAME_DATA["character_classes"], "/".join([f"<o>{c}</o>" for c in GAME_DATA["character_classes"]]))
+        print(GAME_DATA["character_classes"])
 
     def fnc_set_player_class(self, cmd):
             print(f"Set  '{self.player.player_name}' Class to {cmd}")
@@ -30,7 +28,6 @@ class DCRAWL(GameState):
             class_key = matched[0]
             # Store the full class dict so {player_class[desc]} resolves via format_map
             self.player.player_class = GAME_DATA["character_classes"][class_key]
-
 
 handler = CommandHandler()
 game = DCRAWL()
@@ -49,9 +46,9 @@ def send_cmd(cmd: str) -> str:
 
 if DEBUG:
     print(intro())
-    print(send_cmd("n"))
-    # print(send_cmd("2"))
-    # print(send_cmd("Bob"))
+    print(send_cmd("y"))
+    print(send_cmd("2"))
+    print(send_cmd("Bob"))
     # print(send_cmd("Bow"))
     # print(send_cmd("James"))
     # print(send_cmd("Magic"))
