@@ -25,11 +25,6 @@ GAME_DATA = {
 # ---------------------------------------------------------------------------
 
 class game_object:
-    """
-    Base class for all game objects built from object_classes in data.json.
-    Provides render() once; all subclasses inherit it for free.
-    __repr__ stays human-readable for debugging.
-    """
     name: str = ""
     color: str = ""
     def __init__(self, name: str, **kwargs):
@@ -39,14 +34,7 @@ class game_object:
         return f"<{self.color}>{self.name}</{self.color}>"
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name={self.name!r}, color={self.color!r})"
-
-    def __format__(self, spec) -> str:
-        return self.render()
-
-    def __str__(self) -> str:
-        return self.render()
-
+        return f"{self.__class__} {self.render()}"
 
 # ---------------------------------------------------------------------------
 # Object registries
@@ -60,23 +48,26 @@ OBJECT_REGISTRY: dict[str, object] = {}  # object_key  → game object instance
 def create_class_object(dependencies):
     def make_init(defaults):
         def __init__(self, **kwargs):
-            for k, v in defaults.items():
-                if not hasattr(self, k) or getattr(self, k) is None:
+            name = kwargs.pop("name", defaults.get("name", ""))
+            game_object.__init__(self, name)
+            all_defaults = {}
+            for parent in reversed(type(self).__mro__):
+                for k, v in vars(parent).items():
+                    if not k.startswith("_") and not callable(v):
+                        all_defaults[k] = v
+            all_defaults.update(defaults)
+            for k, v in all_defaults.items():
+                if k != "name":
                     setattr(self, k, kwargs.get(k, v))
-
         return __init__
-
-    def _resolve_attrs_and_defaults(class_struct: dict, classes: dict) -> tuple[list, dict]:
-        attrs = [attr for attr in class_struct.get("_attr", [])]
-        defaults = {k: v for k, v in class_struct.items() if k not in ("_attr", "parent_class")}
-        return attrs, defaults
 
     created_classes = []
     for class_name in dependencies:
         class_def = GAME_DATA["object_classes"][class_name]
         parent_name = class_def.get("parent_class", "game_object")
         structure = {k: v for k, v in class_def.items() if k not in ("_attr", "parent_class")}
-        cls = type(class_name, (CLASS_REGISTRY[parent_name],), structure)
+        print(CLASS_REGISTRY[parent_name].__dict__)
+        cls = type(class_name, (CLASS_REGISTRY[parent_name],), {**structure, "__init__": make_init(dict(structure))})
         CLASS_REGISTRY[class_name] = cls
         created_classes.append(cls)
     return created_classes
@@ -92,6 +83,7 @@ def resolve_class_dependency(resolve_class: str, dependencies=None):
         dependencies.insert(0, resolve_class)
         return resolve_class_dependency(_parent, dependencies)
 
+
 def create_instance(struct):
     cls = resolve_class_dependency(struct.get("object_class"))
     struct.pop("object_class")
@@ -104,4 +96,3 @@ for k, v in GAME_DATA["object_definition"].items():
 
 sword_02 = OBJECT_REGISTRY["sword_02"]
 print(sword_02)
-print(sword_02.damage)
