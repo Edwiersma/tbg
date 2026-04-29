@@ -19,6 +19,9 @@ class GameObject:
     def __repr__(self) -> str:
         return f"{self.__class__} {self.render()}"
 
+    def __str__(self) -> str:
+        return self.render()
+
 CLASS_REGISTRY: dict[str, type] = {"GameObject": GameObject}
 OBJECT_REGISTRY: dict[str, object] = {}
 
@@ -63,21 +66,19 @@ def resolve_class_dependency(resolve_class: str, dependencies=None):
 
 def create_instance(class_name=None, obj_name=None, struct={}):
     if class_name:
-        if class_name in CLASS_REGISTRY:
+        if class_name in CLASS_REGISTRY and not struct:
             return CLASS_REGISTRY[class_name]
-        print(f"### class_name: {class_name}")
-        struct = GAME_DATA["object_classes"].get(class_name, None) | struct
+        if class_name not in CLASS_REGISTRY:
+            struct = GAME_DATA["object_classes"].get(class_name, None) | struct
     elif obj_name:
         if obj_name in OBJECT_REGISTRY:
             return OBJECT_REGISTRY[obj_name]
-        print("### obj_name: {obj_name}")
         struct = GAME_DATA["object_definition"].get(obj_name, None) | struct
         class_name = struct.get("object_class")
         struct.pop("object_class")
     else:
         struct = None
     if struct:
-        print(f"### struct: {struct}")
         cls = resolve_class_dependency(class_name)
         inst = cls(**struct)
         return inst
@@ -106,40 +107,17 @@ class GameState:
         return str(self.__dict__)
 
     def initialize(self, i, init_name, init_set, cmd=None):
+        self.response = ""
         if not init_set: init_set = init_name
-        # print(f"initializing {i}, {init_name}, {init_set}, {cmd}, {self.init_step}")
         steps = GAME_DATA.get("init").get(init_set).get("steps")
         step = steps[self.init_step]
         if cmd is None:
             return step.get("q").format_map(self.__dict__)
-        a_required = step.get("a", None)
 
-        cmd_response = ""
-        response_list = step.get("r", None)
-        if response_list:
-            cmd_response = response_list.get(cmd, "")
-            if cmd_response:
-                cmd_response = f"{random.choice(cmd_response)}\n" if isinstance(cmd_response, list) else f"{cmd_response}\n"
-            if response_list.get("_", None):
-                cmd_response = f"{response_list.get('_')}\n{cmd_response}"
-
-        if a_required:
-            cmd = cmd.lower()
-            if isinstance(a_required, list):
-                a_list = a_required
-                if cmd not in a_list:
-                    # print(f"{step.get("q").format_map(self.__dict__)}, {cmd_response}")
-                    return cmd_response + step.get("q").format_map(self.__dict__)
-            elif isinstance(a_required, str):
-                pass
-
-        game_var = step.get("game_var", None)
-        if game_var:
-            self._set_nested(game_var, cmd)
-        game_fnc = step.get("game_fnc", None)
-        if game_fnc:
-            _fnc_resolved = getattr(self, game_fnc)
-            _fnc_resolved(cmd)
+        if (r := self._resolve_response(step.get("r", None), cmd)) is not None: return r
+        if (r := self._resolve_answer(step.get("a", None), step, cmd)) is not None: return r
+        if (r := self._resolve_game_var(step.get("game_var", None), cmd)) is not None: return r
+        if (r := self._resolve_game_fnc(step.get("game_fnc", None), cmd)) is not None: return r
 
         self.init_step += 1
         if self.init_step >= len(steps):
@@ -147,17 +125,46 @@ class GameState:
             self.init_step = 0
             return self.handler_interface(None)
 
-        return cmd_response + steps[self.init_step].get("q").format_map(self.__dict__)
+        return self.response + steps[self.init_step].get("q").format_map(self.__dict__)
 
-    def _set_nested(self, game_var, value):
-        if "." in game_var:
-            obj_name, attr = game_var.split(".", 1)
-            setattr(getattr(self, obj_name), attr, value)
-        else:
-            setattr(self, game_var, value)
+    def _resolve_response(self, response_list, cmd):
+        if response_list:
+            cmd_response = response_list.get(cmd, "")
+            if cmd_response:
+                cmd_response = f"{random.choice(cmd_response)}\n" if isinstance(cmd_response, list) else f"{cmd_response}\n"
+            if response_list.get("_", None):
+                cmd_response = f"{response_list.get('_')}\n{cmd_response}"
+            self.response = cmd_response
 
-    def init_var_override(self, cmd, game_var):
-        pass
+    def _resolve_answer(self, a_required, step, cmd):
+        if a_required:
+            cmd = cmd.lower()
+            if isinstance(a_required, list):
+                a_list = a_required
+                if cmd not in a_list:
+                    return self.response + step.get("q").format_map(self.__dict__)
+            elif isinstance(a_required, str):
+                pass
+
+    def _resolve_game_fnc(self, game_fnc, cmd):
+        if game_fnc:
+            _fnc_resolved = getattr(self, game_fnc)
+            result = _fnc_resolved(cmd)
+            if result == "reset_all":
+                pass
+            elif result == "reset_set":
+                self.init_step = 0
+                return self.handler_interface(None)
+            elif result == "reset_step":
+                return self.handler_interface(None)
+
+    def _resolve_game_var(self, game_var, cmd):
+        if game_var:
+            if "." in game_var:
+                obj_name, attr = game_var.split(".", 1)
+                setattr(getattr(self, obj_name), attr, cmd)
+            else:
+                setattr(self, game_var, cmd)
 
     def fnc_set_player_count(self, cmd):
         self.player_count = int(cmd)
@@ -166,11 +173,18 @@ class GameState:
         self.initialized.pop(1)
 
     def fnc_new_player(self, cmd):
-        # print(f"HELLO: {cmd}")
-        self.player = create_instance(class_name="Player", struct={"name":cmd})
-        # print(self.player)
+        self.player = create_instance(class_name="Player", struct={"name": cmd})
         self.players.append(self.player)
         self.current_player_num += 1
+
+    def fnc_set_player_done(self, cmd):
+        if cmd == "y":
+            pass
+        else:
+            if self.player in self.players:
+                self.players.remove(self.player)
+            self.current_player_num -= 1
+            return "reset_set"
 
 _OBJ_TAG = re.compile(r"<o>(\w+)</o>")
 

@@ -9,25 +9,24 @@ if DEBUG:
     with open('data/data.json') as json_file:
         GAME_DATA = json.load(json_file)
 
+def get_player_classes():
+    return [GAME_DATA["object_definition"].get(c) for c in GAME_DATA["character_classes"]]
 
 class DCRAWL(GameState):
     def __init__(self):
         super().__init__()
-        self.character_classes = (GAME_DATA["character_classes"], "/".join([f"<o>{c}</o>" for c in GAME_DATA["character_classes"]]))
-        print(GAME_DATA["character_classes"])
+        self.character_classes = (
+            [c.get("class_weapon").lower() for c in get_player_classes()],
+            "/".join([f"<{c.get('color')}>{c.get('class_weapon')}</{c.get('color')}>" for c in get_player_classes()])
+        )
 
     def fnc_set_player_class(self, cmd):
-            print(f"Set  '{self.player.player_name}' Class to {cmd}")
-            # Match the typed weapon back to a class key
-            matched = [
-                k for k, v in GAME_DATA["character_classes"].items()
-                if cmd.lower() in v["class_weapon"].lower()
-            ]
-            if not matched:
-                print(f"No class matched for input: {cmd}")
-            class_key = matched[0]
-            # Store the full class dict so {player_class[desc]} resolves via format_map
-            self.player.player_class = GAME_DATA["character_classes"][class_key]
+        matched = [
+            c for c in get_player_classes()
+            if cmd.lower() in c["class_weapon"].lower()
+        ]
+        class_key = matched[0].get("name").lower()
+        self.player.player_class = GAME_DATA["object_definition"][class_key]
 
 handler = CommandHandler()
 game = DCRAWL()
@@ -40,7 +39,7 @@ def intro():
 
 
 def send_cmd(cmd: str) -> str:
-    print(f"Send Command: {cmd}")
+    print(f"### Input Sent: {cmd}")
     return handler.handle_command(cmd)
 
 
@@ -49,9 +48,11 @@ if DEBUG:
     print(send_cmd("y"))
     print(send_cmd("2"))
     print(send_cmd("Bob"))
-    # print(send_cmd("Bow"))
-    # print(send_cmd("James"))
-    # print(send_cmd("Magic"))
-    # print(send_cmd("am"))
-    # print(send_cmd("8"))
-    # print(game.__dict__)
+    print(send_cmd("Bow"))
+    print(send_cmd("n"))
+    print(send_cmd("James"))
+    print(send_cmd("Bow"))
+    print(send_cmd("y"))
+    print(send_cmd("Ann"))
+    print(send_cmd("Magic"))
+    print(send_cmd("y"))

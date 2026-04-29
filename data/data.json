@@ -39,13 +39,14 @@
           "game_fnc": "fnc_new_player"
         },
         {
-          "q": "{player.name}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
+          "q": "{player}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
           "a": "{character_classes[0]}",
           "game_fnc": "fnc_set_player_class"
         },
         {
-          "q": "{player.name}, {player.player_class[desc]} Magnificent! Are you sure of this? y/n",
-          "a": "y/n"
+          "q": "{player}, {player.player_class[desc]} Magnificent! Are you sure of this? y/n",
+          "a": ["y","n"],
+          "game_fnc": "fnc_set_player_done"
         }
       ],
       "help": [
@@ -98,21 +99,21 @@
       "warrior": {"object_class": "PlayerClass",
         "name": "Warrior",
         "color": "orange",
-        "class_weapon": "<orange>Sword</orange>",
+        "class_weapon": "Sword",
         "equipment": ["Heavy Armor", "Sword", "Shield"],
         "desc": "a mighty <orange>Warrior</orange> with <green>Sword</green> and <green>Shield</green>."
       },
       "ranger": {"object_class": "PlayerClass",
         "name": "Ranger",
         "color": "green",
-        "class_weapon": "<green>Bow</green>",
+        "class_weapon": "Bow",
         "equipment": ["<green>Leather Armor</green>", "<green>Bow</green>", "<green>Arrow Quiver</green>"],
         "desc": "a nimble <green>Ranger</green>, danger at a distance."
       },
       "sorcerer": {"object_class": "PlayerClass",
         "name": "Sorcerer",
         "color": "blue",
-        "class_weapon": "<blue>Magic</blue>",
+        "class_weapon": "Magic",
         "equipment": ["<green>Silken Robe</green>", "<green>Magical Staff</green>", "<green>Holy Symbol</green>"],
         "desc": "a wise <blue>Sorcerer</blue> wielding the <blue>elemental powers</blue>."
       }
