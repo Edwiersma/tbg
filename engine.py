@@ -85,7 +85,7 @@ def create_instance(class_name=None, obj_name=None, struct={}):
     else:
         return None
 
-class GameState:
+class GameInit:
     def __init__(self):
         self.player_count = 1
         self.players = []
@@ -94,6 +94,7 @@ class GameState:
         self.init_step = 0
         self.override_commands = ["help", "reset", "credits"]
         self.current_player_num = 1
+        self.game_data = {}
 
     def run_intro(self):
         return resolve_objects("\n".join(
@@ -104,7 +105,8 @@ class GameState:
         for i, (init_name, init_set, initialized) in enumerate(self.initialized):
             if not initialized:
                 return resolve_objects(self.initialize(i, init_name, init_set, cmd))
-        return str(self.__dict__)
+        self.game_data["players"] = self.players
+        return str(self.game_data)
 
     def initialize(self, i, init_name, init_set, cmd=None):
         self.response = ""
@@ -164,7 +166,7 @@ class GameState:
                 obj_name, attr = game_var.split(".", 1)
                 setattr(getattr(self, obj_name), attr, cmd)
             else:
-                setattr(self, game_var, cmd)
+                self.game_data[game_var] = cmd
 
     def fnc_set_player_count(self, cmd):
         self.player_count = int(cmd)

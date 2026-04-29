@@ -5,14 +5,14 @@ DEBUG = sys.platform != 'emscripten'
 
 if DEBUG:
     from cmd import CommandHandler
-    from engine import GameState
+    from engine import GameInit
     with open('data/data.json') as json_file:
         GAME_DATA = json.load(json_file)
 
 def get_player_classes():
     return [GAME_DATA["object_definition"].get(c) for c in GAME_DATA["character_classes"]]
 
-class DCRAWL(GameState):
+class DCRAWL_Init(GameInit):
     def __init__(self):
         super().__init__()
         self.character_classes = (
@@ -29,13 +29,13 @@ class DCRAWL(GameState):
         self.player.player_class = GAME_DATA["object_definition"][class_key]
 
 handler = CommandHandler()
-game = DCRAWL()
-handler.engine_interface = game.handler_interface
+game_init = DCRAWL_Init()
+handler.engine_interface = game_init.handler_interface
 
 
 def intro():
     first_question = next(iter(GAME_DATA["init"].values()))["steps"][0]["q"]
-    return f"{game.run_intro()}\n\n{first_question}"
+    return f"{game_init.run_intro()}\n\n{first_question}"
 
 
 def send_cmd(cmd: str) -> str:
