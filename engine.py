@@ -24,6 +24,7 @@ class GameObject:
 
 CLASS_REGISTRY: dict[str, type] = {"GameObject": GameObject}
 OBJECT_REGISTRY: dict[str, object] = {}
+_OBJ_TAG = re.compile(r"<o>(\w+)</o>")
 
 def create_class_object(dependencies):
     def make_init(defaults):
@@ -187,8 +188,6 @@ class GameInit:
                 self.players.remove(self.player)
             self.current_player_num -= 1
             return "reset_set"
-
-_OBJ_TAG = re.compile(r"<o>(\w+)</o>")
 
 def resolve_objects(text: str) -> str:
     for _ in range(10):
