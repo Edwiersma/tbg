@@ -1,11 +1,14 @@
-try:
-    import json
-    import random
-    import re
-    with open('data/data.json') as json_file:
+import re
+import sys
+import json
+import random
+
+DEBUG = sys.platform != 'emscripten'
+if DEBUG:
+    with open('dcrawl/dcrawl.json') as json_file:
         GAME_DATA = json.load(json_file)
-except:
-    pass
+
+
 
 class GameObject:
     name: str = ""
