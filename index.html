@@ -177,8 +177,6 @@
       await pyodide.runPythonAsync(src);
     }
 
-    /* Boot sequence */
-
     async function boot() {
       inputEl.disabled = true;
 
@@ -213,14 +211,14 @@
         pyodide = await pyodidePromise;
 
         // Load game data
-        const response = await fetch('./data/data.json');
+        const response = await fetch('.dcrawl/dcrawl.json');
         const data = await response.json();
         pyodide.globals.set('GAME_DATA', pyodide.toPy(data));
 
         // Load engine components in dependency order
         await loadPythonModule('./cmd.py');
         await loadPythonModule('./engine.py');
-        await loadPythonModule('./boot.py');
+        await loadPythonModule('.dcrawl/dcrawl.py');
 
         engineReady = true;
 
@@ -247,8 +245,6 @@
       inputEl.disabled = false;
       inputEl.focus();
     }
-
-    /* Command handler — delegates to send_cmd() in boot.py */
 
     async function handleCommand(raw) {
       const cmd = raw.trim();
