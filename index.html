@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>dcrawl.exe</title>
+  <title>tbtg</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -90,7 +90,7 @@
 <body>
   <div class="window">
     <div class="titlebar">
-      <span style="margin-left:4px;">dcrawl.exe</span>
+      <span id="titlebar-label" style="margin-left:4px;">tbtg</span>
     </div>
     <div id="output"></div>
     <div id="input-row">
@@ -106,13 +106,18 @@
   <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 
   <script>
-    const outputEl = document.getElementById('output');
-    const inputEl  = document.getElementById('cmd-input');
-    const MAX_LINES = 100;
+    const outputEl   = document.getElementById('output');
+    const inputEl    = document.getElementById('cmd-input');
+    const titleLabel = document.getElementById('titlebar-label');
+    const MAX_LINES  = 100;
 
     let lines       = [];
     let pyodide     = null;
-    let engineReady = false;
+    let engineReady = false;  // true once Pyodide + boot.py are loaded
+
+    // "shell" — waiting for a game command from boot.py
+    // "game"  — a game module is active; commands go to send_cmd()
+    let mode = 'shell';
 
     /* ── Tag color parser ──────────────────────────────────────────── */
 
@@ -124,17 +129,15 @@
       orange: '#d70',
       blue:   '#08f',
       dim:    '#888',
-      bold:   null,   // bold uses font-weight, not color
+      bold:   null,
     };
 
     function parseTags(text) {
-      // Escape HTML special chars first so raw text is safe
       text = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 
-      // Replace escaped tags with styled spans
       Object.entries(TAG_COLORS).forEach(([tag, color]) => {
         const open  = new RegExp(`&lt;${tag}&gt;`, 'g');
         const close = new RegExp(`&lt;/${tag}&gt;`, 'g');
@@ -148,34 +151,40 @@
       return text;
     }
 
-    /* Rendering */
+    /* ── Rendering ─────────────────────────────────────────────────── */
 
     function renderLines() {
       outputEl.innerHTML = '';
       lines.slice(-MAX_LINES).forEach(l => {
         const span = document.createElement('span');
         span.className = 'line' + (l.cls ? ' ' + l.cls : '');
-        span.innerHTML = parseTags(l.text);  // innerHTML to render color spans
+        span.innerHTML = parseTags(l.text);
         outputEl.appendChild(span);
       });
       outputEl.scrollTop = outputEl.scrollHeight;
     }
 
-    function addLine(text, cls, ref) {
-      if (ref) {
-        lines.push(ref);
-      } else {
-        lines.push({ text: text ?? '', cls: cls ?? '' });
-      }
+    function addLine(text, cls) {
+      lines.push({ text: text ?? '', cls: cls ?? '' });
       if (lines.length > MAX_LINES) lines = lines.slice(-MAX_LINES);
     }
 
-    /* Module loader */
+    async function printSlow(text, delayMs = 350) {
+      for (const line of String(text).split('\n')) {
+        addLine(line === '' ? ' ' : line);
+        renderLines();
+        await new Promise(r => setTimeout(r, delayMs));
+      }
+    }
+
+    /* ── Module loader ─────────────────────────────────────────────── */
 
     async function loadPythonModule(path) {
       const src = await fetch(path).then(r => r.text());
       await pyodide.runPythonAsync(src);
     }
+
+    /* ── Phase 1: boot ─────────────────────────────────────────────── */
 
     async function boot() {
       inputEl.disabled = true;
@@ -183,42 +192,37 @@
       // Start Pyodide download immediately in the background
       const pyodidePromise = loadPyodide();
 
-      // 1. OS header + launch line
+      // OS header
       [
         'Microsoft Windows [Version 10.0.22631.6199]',
         '(c) Microsoft Corporation. All rights reserved.',
         '',
-        'C:\\Users\\edwiersma>dcrawl.exe',
+        'C:\\Users\\user>tbtg',
       ].forEach(t => addLine(t));
       renderLines();
 
       await new Promise(r => setTimeout(r, 300));
 
-      // 2. Animated loading bar — Pyodide downloads concurrently
+      // Animated loading bar — Pyodide downloads concurrently
       await runLoadingBar(addLine, renderLines);
 
-      // 3. DCRAWL info after bar
-      addLine('DCRAWL v0.1, Apr  10 2026, 17:50:34) [MSC v.1938 64 bit (AMD64)] on win32');
+      addLine('TBTG v0.1, May 1 2026 [MSC v.1938 64 bit (AMD64)] on win32');
       addLine('Type <red>"help"</red> for more information.');
       addLine('');
       renderLines();
 
-      // 4. Await Pyodide — may already be done by now
       addLine('Loading Python engine...', 'dim');
       renderLines();
 
       try {
         pyodide = await pyodidePromise;
 
-        // Load game data
-        const response = await fetch('.dcrawl/dcrawl.json');
-        const data = await response.json();
-        pyodide.globals.set('GAME_DATA', pyodide.toPy(data));
-
-        // Load engine components in dependency order
+        // Load shared engine modules
         await loadPythonModule('./cmd.py');
         await loadPythonModule('./engine.py');
-        await loadPythonModule('.dcrawl/dcrawl.py');
+
+        // Load the boot shell
+        await loadPythonModule('./boot.py');
 
         engineReady = true;
 
@@ -231,20 +235,61 @@
           loadingLine.text = 'Engine failed to load: ' + err.message;
           loadingLine.cls  = 'err';
         }
+        renderLines();
+        return; // don't enable input if boot failed
       }
 
       addLine('');
       renderLines();
 
-      const intro = await pyodide.runPythonAsync('intro()');
-        for (const line of String(intro).split('\n')) {
-          addLine(line === '' ? ' ' : line);
-          renderLines();
-          await new Promise(r => setTimeout(r, 350));
-        }
       inputEl.disabled = false;
       inputEl.focus();
     }
+
+    /* ── Phase 2: launch a game dynamically ───────────────────────── */
+
+    async function launchGame(gameName) {
+      addLine('');
+      addLine(`Launching <green>${gameName}</green>...`, 'dim');
+      renderLines();
+
+      try {
+        // Fetch and inject the game's JSON into pyodide.globals as GAME_DATA
+        const jsonPath   = `./${gameName}/${gameName}.json`;
+        const modulePath = `./${gameName}/${gameName}.py`;
+
+        const response = await fetch(jsonPath);
+        if (!response.ok) throw new Error(`Could not fetch ${jsonPath}`);
+        const data = await response.json();
+        pyodide.globals.set('GAME_DATA', pyodide.toPy(data));
+
+        // Load the game's Python module (defines intro() and send_cmd())
+        await loadPythonModule(modulePath);
+
+        // Switch mode so all further input goes to the game
+        mode = 'game';
+        titleLabel.textContent = `${gameName}.exe`;
+
+        const loadingLine = lines.findLast(l => l.text === `Launching <green>${gameName}</green>...`);
+        if (loadingLine) { loadingLine.text = `${gameName} loaded.`; loadingLine.cls = ''; }
+
+        addLine('');
+        renderLines();
+
+        // Run the game intro
+        const intro = await pyodide.runPythonAsync('intro()');
+        await printSlow(intro, 350);
+
+      } catch (err) {
+        addLine(`Failed to launch ${gameName}: ` + err.message, 'err');
+        renderLines();
+      }
+
+      inputEl.disabled = false;
+      inputEl.focus();
+    }
+
+    /* ── Command dispatch ──────────────────────────────────────────── */
 
     async function handleCommand(raw) {
       const cmd = raw.trim();
@@ -258,28 +303,48 @@
         return;
       }
 
+      // ── Game mode: forward everything to the active game module ───
+      if (mode === 'game') {
+        try {
+          pyodide.globals.set('_cmd_input', cmd);
+          const result = await pyodide.runPythonAsync('send_cmd(_cmd_input)');
+
+          if (result === '__RESET__') {
+            location.reload();
+            return;
+          }
+
+          await printSlow(String(result), 350);
+
+        } catch (err) {
+          addLine('Engine error: ' + err.message, 'err');
+          renderLines();
+        }
+        return;
+      }
+
+      // ── Shell mode: route through boot.py ─────────────────────────
       try {
         pyodide.globals.set('_cmd_input', cmd);
-        const result = await pyodide.runPythonAsync('send_cmd(_cmd_input)');
+        const result = await pyodide.runPythonAsync('boot_cmd(_cmd_input)');
 
-        if (result === '__RESET__') {
-          location.reload();
+        // Check for launch signal
+        if (String(result).startsWith('__LAUNCH__:')) {
+          const gameName = String(result).split(':')[1];
+          inputEl.disabled = true;
+          await launchGame(gameName);
           return;
         }
 
-        for (const line of String(result).split('\n')) {
-          addLine(line === '' ? ' ' : line);
-          renderLines();
-          await new Promise(r => setTimeout(r, 350));
-        }
+        if (result) await printSlow(String(result), 200);
 
       } catch (err) {
-        addLine('Engine error: ' + err.message, 'err');
+        addLine('Shell error: ' + err.message, 'err');
         renderLines();
       }
     }
 
-    /* Input listener */
+    /* ── Input listener ────────────────────────────────────────────── */
 
     inputEl.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
