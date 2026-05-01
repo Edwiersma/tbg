@@ -6,7 +6,7 @@ DEBUG = sys.platform != 'emscripten'
 if DEBUG:
     from cmd import CommandHandler
     from engine import GameInit
-    with open('data/data.json') as json_file:
+    with open('dcrawl.json') as json_file:
         GAME_DATA = json.load(json_file)
 
 def get_player_classes():
