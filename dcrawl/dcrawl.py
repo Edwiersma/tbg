@@ -9,10 +9,12 @@ if DEBUG:
     with open('dcrawl.json') as json_file:
         GAME_DATA = json.load(json_file)
 
+
 def get_player_classes():
     return [GAME_DATA["object_definition"].get(c) for c in GAME_DATA["character_classes"]]
 
-class DCRAWL_Init(GameInit):
+
+class GameInitIns(GameInit):
     def __init__(self):
         super().__init__()
         self.character_classes = (
@@ -28,8 +30,9 @@ class DCRAWL_Init(GameInit):
         class_key = matched[0].get("name").lower()
         self.player.player_class = GAME_DATA["object_definition"][class_key]
 
+
 handler = CommandHandler()
-game_init = DCRAWL_Init()
+game_init = GameInitIns()
 handler.engine_interface = game_init.handler_interface
 
 
