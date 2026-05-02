@@ -7,9 +7,9 @@ if DEBUG:
     from cmd_interface import CommandHandler
 
 GAMES = {
-    "bjack": ["<red>BLACK</red>-<blue>JACK</blue>", "<red>BLACK</red>-<blue>JACK</blue> in the <green>MATRIX</green>"],
-    "dcrawl": ["<orange>Dungeon Crawl</orange>", "A dark fantasy adventure Dungeon Crawler"],
-    "solsim": ["<yellow>Solar Sim</yellow>", "Epic Space Sim in Sol. <blue>UNE</blue> VS. <red>MCR</red>"]
+    "bjack": ["<red>BLACK</red>-<blue>JACK</blue>", "<red>BLACK</red>-<blue>JACK</blue> in the <green>MATRIX</green>."],
+    "dcrawl": ["<orange>Dungeon Crawl</orange>", "A dark fantasy adventure Dungeon Crawler."],
+    "solsim": ["<yellow>Solar Sim</yellow>", "Epic Space Sim in Sol. <blue>UNE</blue> VS. <red>MCR</red>."]
 }
 
 HELP = {
@@ -52,6 +52,10 @@ class BootSequence():
         if cmd_list[0] == "dir":
             return self.fnc_dir()
 
+        if cmd_list[0] == "run":
+            if len(self.level[0]) >=2 and self.level[1] in GAMES:
+                return f"__LAUNCH__:{game}"
+
         if "help" in cmd_list[0]:
             return self.fnc_help()
 
@@ -74,7 +78,7 @@ class BootSequence():
     def fnc_help(self) -> str:
         lines = ["For more information on a specific command, type 'command-name -help'"]
         if self.level[-1] in GAMES:
-            lines += [f"{self.level[-1].upper()}      {GAMES[self.level[-1][1]]}"]
+            lines += [f"{self.level[-1].upper():<12}{GAMES[self.level[-1]][1]}"]
             lines += [f"{'RUN':<12}Launch Program."]
         else:
             lines += [f"{k.upper()}{v}" for k, v in HELP.items()]
