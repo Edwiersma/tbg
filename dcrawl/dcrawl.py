@@ -4,7 +4,7 @@ import sys
 DEBUG = sys.platform != 'emscripten'
 
 if DEBUG:
-    from cmd import CommandHandler
+    from cmd_interface import CommandHandler
     from engine import GameInit
     with open('dcrawl.json') as json_file:
         GAME_DATA = json.load(json_file)

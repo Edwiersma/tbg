@@ -4,7 +4,7 @@ import re
 DEBUG = sys.platform != 'emscripten'
 
 if DEBUG:
-    from cmd import CommandHandler
+    from cmd_interface import process_command
 
 GAMES = {
     "bjack": ["<red>BLACK</red>-<blue>JACK</blue>", "<red>BLACK</red>-<blue>JACK</blue> in the <green>MATRIX</green>"],
@@ -13,16 +13,15 @@ GAMES = {
 }
 
 HELP = {
-    # "cd":"          Displays the name of or changes the current directory.",
-    # "date":"        Displays or sets the date.",
+    "cd":"          Displays the name of or changes the current directory.",
+    "date":"        Displays or sets the date.",
     "dir":"         Displays a list of files and subdirectories in a directory.",
-    # "exit":"        Quits the CMD.EXE program (command interpreter).",
+    "exit":"        Quits the CMD.EXE program (command interpreter).",
     "help":"        Provides Help information for Windows commands."
 }
 
 
-def strip_tags(text: str) -> str:
-    print(text)
+def _strip_tags(text: str) -> str:
     return re.sub(r'</?[a-zA-Z]+>', '', text)
 
 
@@ -33,11 +32,11 @@ def _game_by_name(name: str):
 
 def _dir() -> str:
     name_col = max(len(name) for name in GAMES) + 6
-    nice_col = max(len(strip_tags(g[0])) for g in GAMES.values()) + 8
+    nice_col = max(len(_strip_tags(g[0])) for g in GAMES.values()) + 8
     lines = ["Available games:"]
     for name, (nice_name, desc) in GAMES.items():
         name_padding = " " * (name_col - len(name))
-        nice_padding = " " * (nice_col - len(strip_tags(nice_name)))
+        nice_padding = " " * (nice_col - len(_strip_tags(nice_name)))
         lines.append(f"  <green>{name}</green>{name_padding}{nice_name}{nice_padding}{desc}")
     lines += ["", 'Type a <yellow>game name</yellow> to launch it.']
     return "\n".join(lines)
@@ -57,21 +56,22 @@ def boot_cmd(cmd: str) -> str:
 
     game = _game_by_name(cmd_list[0])
     if game:
-        return f"__LAUNCH__:{game}"
+        return process_command(f"__LAUNCH__:{game}")
 
     if len(cmd_list) >= 2:
-        return f"'{cmd_list[0]}' unknown option: -{' '.join(cmd_list[1:])} See '--help'."
+        return process_command(
+            f"'{cmd_list[0]}' unknown option: -{' '.join(cmd_list[1:])} See '--help'."
+        )
 
     if cmd_list[0] == "dir":
-        return _dir()
+        return process_command(_dir())
 
     if "help" in cmd_list[0]:
         return _help()
 
-    return (
+    return process_command(
         f"'{' '.join(cmd_list)}' is not recognized as an internal or external command. See '--help'."
     )
-
 
 if DEBUG:
     for test in ["", "help", "dir", "dcrawl", "foo"]:

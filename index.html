@@ -218,7 +218,7 @@
         pyodide = await pyodidePromise;
 
         // Load shared engine modules
-        await loadPythonModule('./cmd.py');
+        await loadPythonModule('./cmd_interface.py');
         await loadPythonModule('./engine.py');
 
         // Load the boot shell
