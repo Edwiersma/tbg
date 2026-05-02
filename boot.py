@@ -30,28 +30,9 @@ def _game_by_name(name: str):
         return name.lower()
 
 
-def _dir() -> str:
-    name_col = max(len(name) for name in GAMES) + 6
-    nice_col = max(len(_strip_tags(g[0])) for g in GAMES.values()) + 8
-    lines = ["Available games:"]
-    for name, (nice_name, desc) in GAMES.items():
-        name_padding = " " * (name_col - len(name))
-        nice_padding = " " * (nice_col - len(_strip_tags(nice_name)))
-        lines.append(f"  <green>{name}</green>{name_padding}{nice_name}{nice_padding}{desc}")
-    lines += ["", 'Type a <yellow>game name</yellow> to launch it.']
-    return "\n".join(lines)
-
-
-def _help() -> str:
-    return "\n".join(
-        ["For more information on a specific command, type 'command-name -help'"] +
-        [f"{k.upper()}{v}" for k, v in HELP.items()]
-    )
-
 class BootSequence():
     def __init__(self):
-        pass
-
+        self.level = ["\\"]
 
     def handler_interface(self, cmd: str) -> str:
         cmd_list = cmd.strip().lower().split()
@@ -62,16 +43,55 @@ class BootSequence():
         if game:
             return f"__LAUNCH__:{game}"
 
+        if cmd_list[0] == "cd":
+            return self.fnc_cd(cmd_list)
+
         if len(cmd_list) >= 2:
             return f"'{cmd_list[0]}' unknown option: -{' '.join(cmd_list[1:])} See '--help'."
 
         if cmd_list[0] == "dir":
-            return _dir()
+            return self.fnc_dir()
 
         if "help" in cmd_list[0]:
-            return _help()
+            return self.fnc_help()
 
         return f"'{' '.join(cmd_list)}' is not recognized as an internal or external command. See '--help'."
+
+    def fnc_cd(self, cmd_list: list) -> str:
+        path = " ".join(cmd_list[1:])
+        print(f"### Path: {path}, {path in GAMES}")
+        if not path:
+            return "\\".join(self.level)
+        if path == "..":
+            if len(self.level) >= 2:
+                self.level.pop()
+                return "\\".join(self.level)
+        elif path in GAMES:
+            self.level.append(path)
+            return "\\".join(self.level)
+        return "PERMISSION DENIED"
+
+    def fnc_help(self) -> str:
+        lines = ["For more information on a specific command, type 'command-name -help'"]
+        if self.level[-1] in GAMES:
+            lines += [f"{self.level[-1].upper()}      {GAMES[self.level[-1][1]]}"]
+            lines += [f"{'RUN':<12}Launch Program."]
+        else:
+            lines += [f"{k.upper()}{v}" for k, v in HELP.items()]
+        return "\n".join(lines)
+
+
+    def fnc_dir(self) -> str:
+        name_col = max(len(name) for name in GAMES) + 6
+        nice_col = max(len(_strip_tags(g[0])) for g in GAMES.values()) + 8
+        lines = ["Available games:"]
+        for name, (nice_name, desc) in GAMES.items():
+            name_padding = " " * (name_col - len(name))
+            nice_padding = " " * (nice_col - len(_strip_tags(nice_name)))
+            lines.append(f"  <green>{name}</green>{name_padding}{nice_name}{nice_padding}{desc}")
+        lines += ["", 'Type a <yellow>game name</yellow> to launch it.']
+        return "\n".join(lines)
+
 
 handler = CommandHandler()
 boot_sequence = BootSequence()
@@ -82,6 +102,6 @@ def send_cmd(cmd: str) -> str:
     return handler.handle_command(cmd)
 
 if DEBUG:
-    for test in ["", "help", "dir", "dcrawl", "foo"]:
+    for test in ["cd root", "help", "cd dcrawl", "dcrawl", "foo"]:
         print(f"\n>>> {test}")
         print(send_cmd(test))
