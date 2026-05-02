@@ -201,7 +201,7 @@
       ].forEach(t => addLine(t));
       renderLines();
 
-      await new Promise(r => setTimeout(r, 300));
+      //await new Promise(r => setTimeout(r, 300));
 
       // Animated loading bar — Pyodide downloads concurrently
       await runLoadingBar(addLine, renderLines);
@@ -326,7 +326,7 @@
       // ── Shell mode: route through boot.py ─────────────────────────
       try {
         pyodide.globals.set('_cmd_input', cmd);
-        const result = await pyodide.runPythonAsync('boot_cmd(_cmd_input)');
+        const result = await pyodide.runPythonAsync('send_cmd(_cmd_input)');
 
         // Check for launch signal
         if (String(result).startsWith('__LAUNCH__:')) {
