@@ -4,7 +4,7 @@ import re
 DEBUG = sys.platform != 'emscripten'
 
 if DEBUG:
-    from cmd_interface import process_command
+    from cmd_interface import CommandHandler
 
 GAMES = {
     "bjack": ["<red>BLACK</red>-<blue>JACK</blue>", "<red>BLACK</red>-<blue>JACK</blue> in the <green>MATRIX</green>"],
@@ -48,32 +48,40 @@ def _help() -> str:
         [f"{k.upper()}{v}" for k, v in HELP.items()]
     )
 
+class BootSequence():
+    def __init__(self):
+        pass
 
-def boot_cmd(cmd: str) -> str:
-    cmd_list = cmd.strip().lower().split()
-    if not cmd_list or not cmd_list[0]:
-        return ""
 
-    game = _game_by_name(cmd_list[0])
-    if game:
-        return process_command(f"__LAUNCH__:{game}")
+    def handler_interface(self, cmd: str) -> str:
+        cmd_list = cmd.strip().lower().split()
+        if not cmd_list or not cmd_list[0]:
+            return ""
 
-    if len(cmd_list) >= 2:
-        return process_command(
-            f"'{cmd_list[0]}' unknown option: -{' '.join(cmd_list[1:])} See '--help'."
-        )
+        game = _game_by_name(cmd_list[0])
+        if game:
+            return f"__LAUNCH__:{game}"
 
-    if cmd_list[0] == "dir":
-        return process_command(_dir())
+        if len(cmd_list) >= 2:
+            return f"'{cmd_list[0]}' unknown option: -{' '.join(cmd_list[1:])} See '--help'."
 
-    if "help" in cmd_list[0]:
-        return _help()
+        if cmd_list[0] == "dir":
+            return _dir()
 
-    return process_command(
-        f"'{' '.join(cmd_list)}' is not recognized as an internal or external command. See '--help'."
-    )
+        if "help" in cmd_list[0]:
+            return _help()
+
+        return f"'{' '.join(cmd_list)}' is not recognized as an internal or external command. See '--help'."
+
+handler = CommandHandler()
+boot_sequence = BootSequence()
+handler.engine_interface = boot_sequence.handler_interface
+
+def send_cmd(cmd: str) -> str:
+    print(f"### Input Sent: {cmd}")
+    return handler.handle_command(cmd)
 
 if DEBUG:
     for test in ["", "help", "dir", "dcrawl", "foo"]:
         print(f"\n>>> {test}")
-        print(boot_cmd(test))
+        print(send_cmd(test))
