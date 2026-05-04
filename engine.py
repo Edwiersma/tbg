@@ -61,7 +61,10 @@ def resolve_class_dependency(resolve_class: str, dependencies=None):
         dependencies = list()
     if resolve_class in CLASS_REGISTRY:
         return CLASS_REGISTRY[resolve_class] if not dependencies else create_class_object(dependencies)[-1]
-    _parent = str(GAME_DATA.get("object_classes").get(resolve_class).get("parent_class", None))
+    class_def = GAME_DATA.get("object_classes", {}).get(resolve_class)
+    if class_def is None:
+        return None
+    _parent = class_def.get("parent_class")
     if _parent:
         dependencies.insert(0, resolve_class)
         return resolve_class_dependency(_parent, dependencies)
@@ -73,17 +76,25 @@ def create_instance(class_name=None, obj_name=None, struct={}):
         if class_name in CLASS_REGISTRY and not struct:
             return CLASS_REGISTRY[class_name]
         if class_name not in CLASS_REGISTRY:
-            struct = GAME_DATA["object_classes"].get(class_name, None) | struct
+            base = GAME_DATA["object_classes"].get(class_name)
+            if base is None:
+                return None
+            struct = base | struct
     elif obj_name:
         if obj_name in OBJECT_REGISTRY:
             return OBJECT_REGISTRY[obj_name]
-        struct = GAME_DATA["object_definition"].get(obj_name, None) | struct
+        base = GAME_DATA["object_definition"].get(obj_name)
+        if base is None:
+            return None
+        struct = base | struct
         class_name = struct.get("object_class")
         struct.pop("object_class")
     else:
         struct = None
     if struct:
         cls = resolve_class_dependency(class_name)
+        if cls is None:
+            return None
         inst = cls(**struct)
         return inst
     else:
