@@ -1,16 +1,28 @@
 import sys
 import re
+import json
 
 DEBUG = sys.platform != 'emscripten'
 
 if DEBUG:
     from cmd_interface import CommandHandler
 
-GAMES = {
-    "bjack": ["<red>BLACK</red>-<blue>JACK</blue>", "<red>BLACK</red>-<blue>JACK</blue> in the <green>MATRIX</green>."],
-    "dcrawl": ["<orange>Dungeon Crawl</orange>", "A dark fantasy adventure Dungeon Crawler."],
-    "solsim": ["<yellow>Solar Sim</yellow>", "Epic Space Sim in Sol. <blue>UNE</blue> VS. <red>MCR</red>."]
-}
+    def _load_games():
+        with open('games.json') as f:
+            names = json.load(f)
+        games = {}
+        for name in names:
+            try:
+                with open(f'{name}/manifest.json') as f:
+                    m = json.load(f)
+                games[name] = [m["title"], m["tagline"]]
+            except FileNotFoundError:
+                continue
+        return games
+
+    GAMES = _load_games()
+# In emscripten, GAMES is injected into the global namespace by the JS host
+# before this module is loaded.
 
 HELP = {
     "cd":"          Displays the name of or changes the current directory.",
