@@ -1,6 +1,7 @@
 import sys
 import re
 import json
+from datetime import date
 
 DEBUG = sys.platform != 'emscripten'
 
@@ -58,6 +59,9 @@ class BootSequence():
         if cmd_list[0] == "cd":
             return self.fnc_cd(cmd_list)
 
+        if cmd_list[0] == "date":
+            return self.fnc_date(cmd_list)
+
         if len(cmd_list) >= 2:
             return f"'{cmd_list[0]}' unknown option: -{' '.join(cmd_list[1:])} See '--help'."
 
@@ -65,8 +69,9 @@ class BootSequence():
             return self.fnc_dir()
 
         if cmd_list[0] == "run":
-            if len(self.level[0]) >=2 and self.level[1] in GAMES:
-                return f"__LAUNCH__:{game}"
+            if len(self.level) >= 2 and self.level[1] in GAMES:
+                return f"__LAUNCH__:{self.level[1]}"
+            return "Not in a game folder. Use 'cd <game>' first."
 
         if "help" in cmd_list[0]:
             return self.fnc_help()
@@ -86,6 +91,11 @@ class BootSequence():
             self.level.append(path)
             return "\\".join(self.level)
         return "PERMISSION DENIED"
+
+    def fnc_date(self, cmd_list: list) -> str:
+        if len(cmd_list) > 1:
+            return "The current date cannot be set."
+        return f"The current date is: {date.today().strftime('%a %m/%d/%Y')}"
 
     def fnc_help(self) -> str:
         lines = ["For more information on a specific command, type 'command-name -help'"]
