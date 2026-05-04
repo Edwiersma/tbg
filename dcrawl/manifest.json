@@ -1,4 +1,7 @@
 {
-  "title": "<orange>Dungeon Crawl</orange>",
-  "tagline": "A dark fantasy adventure Dungeon Crawler."
+  "title": "<orange>DUNGEON CRAWL</orange>",
+  "tagline": "A dark fantasy adventure Dungeon Crawler.",
+  "copyright": "Copyleft (c) by TBTG Group. No rights reserved.",
+  "release": "Release 21 / Serial number 300619",
+  "engine": "<dim>engine.py 0.9.0</dim> [MSC v.1938 64 bit (AMD64)] on win32"
 }
