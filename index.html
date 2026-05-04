@@ -193,18 +193,15 @@
       const pyodidePromise = loadPyodide();
 
       // OS header
-      [
+      await printSlow([
         'Microsoft Windows [Version 10.0.22631.6199]',
         '(c) Microsoft Corporation. All rights reserved.',
         '',
-        'C:\\Users\\user>tbtg',
-      ].forEach(t => addLine(t));
-      renderLines();
-
-      addLine('TBTG v0.1, May 1 2026 [MSC v.1938 64 bit (AMD64)] on win32');
-      addLine('Type <red>"help"</red> for more information.');
-      addLine('');
-      renderLines();
+        'C:\\Win\\Prog>tbtg',
+        'TBTG v0.1 [MSC v.1938 64 bit (AMD64)] on win32',
+        'Type <red>"help"</red> for more information.',
+        '',
+      ].join('\n'));
 
       addLine('Loading Python engine...', 'dim');
       renderLines();
