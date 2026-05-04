@@ -124,6 +124,5 @@
     "  reset       - Reset the game clearing all data",
     "  inventory   - Show your inventory",
     "  credits     - Show credits"
-  ],
-  "credits": "<red>engine.py 0.9.0</red> - <purple>Pythonic Games©</purple> - <blue>1991</blue>"
+  ]
 }

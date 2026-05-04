@@ -9,7 +9,6 @@ if DEBUG:
         GAME_DATA = json.load(json_file)
 
 
-
 class GameObject:
     name: str = ""
     color: str = ""
@@ -113,7 +112,7 @@ class GameInit:
 
     def run_intro(self):
         return resolve_objects("\n".join(
-            [f"{GAME_DATA.get('credits')}\n\n"] + GAME_DATA.get("game_intro")
+            GAME_DATA.get("game_intro")
         ))
 
     def handler_interface(self, cmd: str | None) -> str:

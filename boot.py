@@ -15,8 +15,7 @@ if DEBUG:
         for name in names:
             try:
                 with open(f'{name}/manifest.json') as f:
-                    m = json.load(f)
-                games[name] = [m["title"], m["tagline"]]
+                    games[name] = json.load(f)
             except FileNotFoundError:
                 continue
         return games
@@ -100,7 +99,7 @@ class BootSequence():
     def fnc_help(self) -> str:
         lines = ["For more information on a specific command, type 'command-name -help'"]
         if self.level[-1] in GAMES:
-            lines += [f"{self.level[-1].upper():<12}{GAMES[self.level[-1]][1]}"]
+            lines += [f"{self.level[-1].upper():<12}{GAMES[self.level[-1]]['tagline']}"]
             lines += [f"{'RUN':<12}Launch Program."]
         else:
             lines += [f"{k.upper()}{v}" for k, v in HELP.items()]
@@ -109,9 +108,11 @@ class BootSequence():
 
     def fnc_dir(self) -> str:
         name_col = max(len(name) for name in GAMES) + 6
-        nice_col = max(len(_strip_tags(g[0])) for g in GAMES.values()) + 8
+        nice_col = max(len(_strip_tags(g['title'])) for g in GAMES.values()) + 8
         lines = ["Available games:"]
-        for name, (nice_name, desc) in GAMES.items():
+        for name, m in GAMES.items():
+            nice_name = m['title']
+            desc = m['tagline']
             name_padding = " " * (name_col - len(name))
             nice_padding = " " * (nice_col - len(_strip_tags(nice_name)))
             lines.append(f"  <green>{name}</green>{name_padding}{nice_name}{nice_padding}{desc}")

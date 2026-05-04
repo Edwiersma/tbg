@@ -90,11 +90,11 @@
 <body>
   <div class="window">
     <div class="titlebar">
-      <span id="titlebar-label" style="margin-left:4px;">tbtg</span>
+      <span id="titlebar-label" style="margin-left:4px;">TBTG</span>
     </div>
     <div id="output"></div>
     <div id="input-row">
-      <span id="prompt-label">&gt;&gt;&gt;</span>
+      <span id="prompt-label">&gt;</span>
       <input id="cmd-input" type="text" autocomplete="off" spellcheck="false" />
     </div>
   </div>
@@ -109,11 +109,13 @@
     const outputEl   = document.getElementById('output');
     const inputEl    = document.getElementById('cmd-input');
     const titleLabel = document.getElementById('titlebar-label');
+    const promptEl   = document.getElementById('prompt-label');
     const MAX_LINES  = 100;
 
-    let lines       = [];
-    let pyodide     = null;
-    let engineReady = false;  // true once Pyodide + boot.py are loaded
+    let lines          = [];
+    let pyodide        = null;
+    let engineReady    = false;  // true once Pyodide + boot.py are loaded
+    let gameManifests  = {};     // { gameName: { title, tagline, copyright?, release?, engine? } }
 
     // "shell" — waiting for a game command from boot.py
     // "game"  — a game module is active; commands go to send_cmd()
@@ -197,10 +199,12 @@
         'Microsoft Windows [Version 10.0.22631.6199]',
         '(c) Microsoft Corporation. All rights reserved.',
         '',
-        'C:\\Win\\Prog>tbtg',
-        'TBTG v0.1 [MSC v.1938 64 bit (AMD64)] on win32',
-        'Type <red>"help"</red> for more information.',
+        'B:\\Prg>TBTG',
         '',
+        'TBTG v0.1 [MSC v.1938 64 bit (AMD64)] on win32',
+        'Copyleft (c) by TBTG Group. No rights reserved.',
+        'Release 42 / Serial number 210690',
+        'Type <red>"help"</red> for more information.',
       ].join('\n'));
 
       addLine('Loading Python engine...', 'dim');
@@ -215,14 +219,13 @@
 
         // Build GAMES from per-game manifests and inject before boot.py loads
         const gameNames = await fetch('./games.json').then(r => r.json());
-        const games = {};
+        gameManifests = {};
         for (const name of gameNames) {
           const res = await fetch(`./${name}/manifest.json`);
           if (!res.ok) continue;
-          const m = await res.json();
-          games[name] = [m.title, m.tagline];
+          gameManifests[name] = await res.json();
         }
-        pyodide.globals.set('GAMES', pyodide.toPy(games));
+        pyodide.globals.set('GAMES', pyodide.toPy(gameManifests));
 
         // Load the boot shell
         await loadPythonModule('./boot.py');
@@ -245,6 +248,7 @@
       addLine('');
       renderLines();
 
+      promptEl.textContent = 'TBTG>';
       inputEl.disabled = false;
       inputEl.focus();
     }
@@ -257,30 +261,43 @@
       renderLines();
 
       try {
-        // Fetch and inject the game's JSON into pyodide.globals as GAME_DATA
         const jsonPath   = `./${gameName}/${gameName}.json`;
         const modulePath = `./${gameName}/${gameName}.py`;
 
-        // Run the actual load concurrently with the animated loading bar
-        const workPromise = (async () => {
-          const response = await fetch(jsonPath);
-          if (!response.ok) throw new Error(`Could not fetch ${jsonPath}`);
-          const data = await response.json();
-          pyodide.globals.set('GAME_DATA', pyodide.toPy(data));
-          await loadPythonModule(modulePath);
-        })();
+        // Pre-fetch both files before starting the loading bar so a missing
+        // game (404) reports cleanly without a stranded animation.
+        const [jsonRes, modRes] = await Promise.all([fetch(jsonPath), fetch(modulePath)]);
+        if (!jsonRes.ok) throw new Error(`Could not fetch ${jsonPath}`);
+        if (!modRes.ok)  throw new Error(`Could not fetch ${modulePath}`);
+        const data      = await jsonRes.json();
+        const moduleSrc = await modRes.text();
 
+        // Both files validated — inject GAME_DATA and run the bar concurrently
+        // with the Python module execution.
+        pyodide.globals.set('GAME_DATA', pyodide.toPy(data));
         await Promise.all([
           runLoadingBar(addLine, renderLines),
-          workPromise,
+          pyodide.runPythonAsync(moduleSrc),
         ]);
 
         // Switch mode so all further input goes to the game
         mode = 'game';
         titleLabel.textContent = `${gameName}.exe`;
+        promptEl.textContent = `${gameName.toUpperCase()}>`;
 
-        addLine('');
-        renderLines();
+        // Print manifest header — skip fields the manifest doesn't define
+        const m = gameManifests[gameName] || {};
+        const headerLines = [
+          '',
+          m.title,
+          m.tagline,
+          m.copyright,
+          m.release,
+          m.engine,
+          '',
+          '',
+        ].filter(line => line !== undefined);
+        await printSlow(headerLines.join('\n'));
 
         // Run the game intro
         const intro = await pyodide.runPythonAsync('intro()');
@@ -299,7 +316,7 @@
 
     async function handleCommand(raw) {
       const cmd = raw.trim();
-      addLine('>>> ' + cmd, 'cmd');
+      addLine(promptEl.textContent + ' ' + cmd, 'cmd');
 
       if (!cmd) { renderLines(); return; }
 
@@ -325,7 +342,8 @@
             // that the game module shadowed when it was loaded.
             await loadPythonModule('./boot.py');
             mode = 'shell';
-            titleLabel.textContent = 'tbtg';
+            titleLabel.textContent = 'TBTG';
+            promptEl.textContent = 'TBTG>';
             addLine('');
             renderLines();
             return;
