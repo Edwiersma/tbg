@@ -117,6 +117,8 @@ class GameInit:
         ))
 
     def handler_interface(self, cmd: str | None) -> str:
+        if isinstance(cmd, str) and cmd.strip().lower() == "exit":
+            return "__EXIT__"
         for i, (init_name, init_set, initialized) in enumerate(self.initialized):
             if not initialized:
                 return resolve_objects(self.initialize(i, init_name, init_set, cmd))
