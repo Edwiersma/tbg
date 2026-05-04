@@ -164,8 +164,8 @@
       outputEl.scrollTop = outputEl.scrollHeight;
     }
 
-    function addLine(text, cls) {
-      lines.push({ text: text ?? '', cls: cls ?? '' });
+    function addLine(text, cls, lineObj) {
+      lines.push(lineObj || { text: text ?? '', cls: cls ?? '' });
       if (lines.length > MAX_LINES) lines = lines.slice(-MAX_LINES);
     }
 
@@ -200,11 +200,6 @@
         'C:\\Users\\user>tbtg',
       ].forEach(t => addLine(t));
       renderLines();
-
-      //await new Promise(r => setTimeout(r, 300));
-
-      // Animated loading bar — Pyodide downloads concurrently
-      await runLoadingBar(addLine, renderLines);
 
       addLine('TBTG v0.1, May 1 2026 [MSC v.1938 64 bit (AMD64)] on win32');
       addLine('Type <red>"help"</red> for more information.');
@@ -269,20 +264,23 @@
         const jsonPath   = `./${gameName}/${gameName}.json`;
         const modulePath = `./${gameName}/${gameName}.py`;
 
-        const response = await fetch(jsonPath);
-        if (!response.ok) throw new Error(`Could not fetch ${jsonPath}`);
-        const data = await response.json();
-        pyodide.globals.set('GAME_DATA', pyodide.toPy(data));
+        // Run the actual load concurrently with the animated loading bar
+        const workPromise = (async () => {
+          const response = await fetch(jsonPath);
+          if (!response.ok) throw new Error(`Could not fetch ${jsonPath}`);
+          const data = await response.json();
+          pyodide.globals.set('GAME_DATA', pyodide.toPy(data));
+          await loadPythonModule(modulePath);
+        })();
 
-        // Load the game's Python module (defines intro() and send_cmd())
-        await loadPythonModule(modulePath);
+        await Promise.all([
+          runLoadingBar(addLine, renderLines),
+          workPromise,
+        ]);
 
         // Switch mode so all further input goes to the game
         mode = 'game';
         titleLabel.textContent = `${gameName}.exe`;
-
-        const loadingLine = lines.findLast(l => l.text === `Launching <green>${gameName}</green>...`);
-        if (loadingLine) { loadingLine.text = `${gameName} loaded.`; loadingLine.cls = ''; }
 
         addLine('');
         renderLines();
