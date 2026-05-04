@@ -221,6 +221,17 @@
         await loadPythonModule('./cmd_interface.py');
         await loadPythonModule('./engine.py');
 
+        // Build GAMES from per-game manifests and inject before boot.py loads
+        const gameNames = await fetch('./games.json').then(r => r.json());
+        const games = {};
+        for (const name of gameNames) {
+          const res = await fetch(`./${name}/manifest.json`);
+          if (!res.ok) continue;
+          const m = await res.json();
+          games[name] = [m.title, m.tagline];
+        }
+        pyodide.globals.set('GAMES', pyodide.toPy(games));
+
         // Load the boot shell
         await loadPythonModule('./boot.py');
 
