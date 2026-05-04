@@ -323,6 +323,17 @@
             return;
           }
 
+          if (result === '__EXIT__') {
+            // Re-load boot.py to restore boot-shell globals (send_cmd, handler, boot_sequence)
+            // that the game module shadowed when it was loaded.
+            await loadPythonModule('./boot.py');
+            mode = 'shell';
+            titleLabel.textContent = 'tbtg';
+            addLine('');
+            renderLines();
+            return;
+          }
+
           await printSlow(String(result), 350);
 
         } catch (err) {
