@@ -11,14 +11,6 @@
     "player_count": {
         "steps": [
             {
-                "q": "Are you sure you want to <yellow>initialize</yellow> your adventure? <yellow>y/n</yellow>",
-                "a": ["y"],
-                "r": {
-                  "y": ["Many dangers await!", "No time to waste!", "Let's crawl some dungeon!"],
-                  "n": "Maybe next time..."
-                }
-            },
-            {
                 "q": "How many adventurers are <yellow>playing</yellow>? <yellow>1-6</yellow>",
                 "a": ["1", "2", "3", "4", "5", "6"],
                 "game_fnc": "fnc_set_player_count"
@@ -37,6 +29,11 @@
         {
           "q": "Adventurer {current_player_num} what is your <purple>name</purple> brave one?",
           "game_fnc": "fnc_new_player"
+        },
+        {
+        "q": "Well well... {player} and what are you?\n <orange>Human</orange> / Elf / <blue>Half Elf</blue> / <dim>Dwarf</dim> / <purple>Halfling</purple> / <red>Gnome</red> / <green>Half Orc</green> / <yellow>Dragonborn</yellow> ",
+        "a": ["human", "elf", "half-elf", "dwarf", "halfling", "gnome", "half-orc", "dragonborn", "goblin"],
+        "game_var": "player.race"
         },
         {
           "q": "{player}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
@@ -85,6 +82,8 @@
       "ObjName": {"parent_class": "GameObject", "color": "purple"},
       "Player": {"parent_class": "ObjName", "player_class": null,"inventory": []},
       "Location": {"parent_class": "GameObject", "color": "dim"},
+      "Race": {"parent_class": "GameObject"},
+      "PlayerRace": {"parent_class": "Race"},
       "Item": {"parent_class": "GameObject", "color": "green"},
       "Weapon": {"parent_class": "Item", "damage": 0, "damage_type": null, "slot": null},
       "Armor": {"parent_class": "Item", "armor_value": 0, "armor_type": null, "slot": null},
@@ -96,26 +95,34 @@
       "sword_02": {"name": "+1 sword", "object_class": "Weapon", "damage": 10, "damage_type": "slash", "slot": "1hand"},
       "helm_01": {"name": "Leather Helmet", "object_class": "Armor", "armor": 5, "armor_type": "leather", "slot": "head"},
       "shield_01": {"name": "Buckler", "object_class": "Armor", "armor": 15, "armor_type": "metal", "slot": "1hand"},
+      "human": {"name":  "Human", "object_class": "PlayerRace", "color":  "orange"},
+      "elf": {"name":  "Elf", "object_class": "PlayerRace", "color":  "white"},
+      "halfelf": {"name":  "Half-Elf", "object_class": "PlayerRace", "color":  "blue"},
+      "dwarf": {"name":  "Dwarf", "object_class": "PlayerRace", "color":  "dim"},
+      "halfling": {"name":  "Halfling", "object_class": "PlayerRace", "color":  "purple"},
+      "gnome": {"name":  "Gnome", "object_class": "PlayerRace", "color":  "red"},
+      "halforc": {"name":  "Half-Orc", "object_class": "PlayerRace", "color":  "green"},
+      "dragonborn": {"name":  "Dragonborn", "object_class": "PlayerRace", "color":  "yellow"},
       "warrior": {"object_class": "PlayerClass",
         "name": "Warrior",
         "color": "orange",
         "class_weapon": "Sword",
         "equipment": ["Heavy Armor", "Sword", "Shield"],
-        "desc": "a mighty <orange>Warrior</orange> with <green>Sword</green> and <green>Shield</green>."
+        "desc": "a mighty {player.race} <orange>Warrior</orange> with <green>Sword</green> and <green>Shield</green>."
       },
       "ranger": {"object_class": "PlayerClass",
         "name": "Ranger",
         "color": "green",
         "class_weapon": "Bow",
         "equipment": ["<green>Leather Armor</green>", "<green>Bow</green>", "<green>Arrow Quiver</green>"],
-        "desc": "a nimble <green>Ranger</green>, danger at a distance."
+        "desc": "a nimble {player.race} <green>Ranger</green>, danger at a distance."
       },
       "sorcerer": {"object_class": "PlayerClass",
         "name": "Sorcerer",
         "color": "blue",
         "class_weapon": "Magic",
         "equipment": ["<green>Silken Robe</green>", "<green>Magical Staff</green>", "<green>Holy Symbol</green>"],
-        "desc": "a wise <blue>Sorcerer</blue> wielding the <blue>elemental powers</blue>."
+        "desc": "a wise {player.race} <blue>Sorcerer</blue> wielding the <blue>elemental powers</blue>."
       }
   },
   "help": [

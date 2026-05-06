@@ -10,21 +10,25 @@ if DEBUG:
         GAME_DATA = json.load(json_file)
 
 
-def get_player_classes():
-    return [GAME_DATA["object_definition"].get(c) for c in GAME_DATA["character_classes"]]
+def get_game_data(search_set, key, value):
+    return [v for k, v in GAME_DATA[search_set].items() if v.get(key) == value]
 
 
 class GameInitIns(GameInit):
     def __init__(self):
         super().__init__()
         self.character_classes = (
-            [c.get("class_weapon").lower() for c in get_player_classes()],
-            "/".join([f"<{c.get('color')}>{c.get('class_weapon')}</{c.get('color')}>" for c in get_player_classes()])
+            [c.get("class_weapon").lower() for c in get_game_data("object_definition", "object_class", "PlayerClass")],
+            "/".join([f"<{c.get('color')}>{c.get('class_weapon')}</{c.get('color')}>" for c in get_game_data("object_definition", "object_class", "PlayerClass")])
+        )
+        self.character_races = (
+            [c.get("class_weapon").lower() for c in get_game_data("object_definition", "object_class", "PlayerClass")],
+            "/".join([f"<{c.get('color')}>{c.get('class_weapon')}</{c.get('color')}>" for c in get_game_data("object_definition", "object_class", "PlayerClass")])
         )
 
     def fnc_set_player_class(self, cmd):
         matched = [
-            c for c in get_player_classes()
+            c for c in get_game_data("object_definition", "object_class", "PlayerClass")
             if cmd.lower() in c["class_weapon"].lower()
         ]
         class_key = matched[0].get("name").lower()
@@ -51,11 +55,6 @@ if DEBUG:
     print(send_cmd("y"))
     print(send_cmd("2"))
     print(send_cmd("Bob"))
-    print(send_cmd("Bow"))
-    print(send_cmd("n"))
-    print(send_cmd("James"))
-    print(send_cmd("Bow"))
-    print(send_cmd("y"))
-    print(send_cmd("Ann"))
-    print(send_cmd("Magic"))
+    print(send_cmd("Gnome"))
+    print(send_cmd("Sword"))
     print(send_cmd("y"))
