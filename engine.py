@@ -5,7 +5,7 @@ import random
 
 DEBUG = sys.platform != 'emscripten'
 if DEBUG:
-    with open('dcrawl/dcrawl.json') as json_file:
+    with open('dcrawl.json') as json_file:
         GAME_DATA = json.load(json_file)
 
 
@@ -120,7 +120,7 @@ class GameInit:
             return "__EXIT__"
         for i, (init_name, init_set, initialized) in enumerate(self.initialized):
             if not initialized:
-                return resolve_objects(self.initialize(i, init_name, init_set, cmd))
+                return resolve_objects(self._resolve_return(self.initialize(i, init_name, init_set, cmd)))
         self.game_data["players"] = self.players
         return str(self.game_data)
 
@@ -138,6 +138,10 @@ class GameInit:
         if (r := self._resolve_game_fnc(step.get("game_fnc", None), cmd)) is not None: return r
 
         self.init_step += 1
+        try:
+            print(f"### Player: {self.player.__dict__}")
+        except:
+            pass
         if self.init_step >= len(steps):
             self.initialized[i] = (init_name, init_set, True)
             self.init_step = 0
@@ -183,6 +187,14 @@ class GameInit:
                 setattr(getattr(self, obj_name), attr, cmd)
             else:
                 self.game_data[game_var] = cmd
+
+    def _resolve_return(self, text):
+        while True:
+            resolved = text.format_map(self.__dict__)
+            if resolved == text:
+                break
+            text = resolved
+        return self.response + resolved
 
     def fnc_set_player_count(self, cmd):
         self.player_count = int(cmd)
