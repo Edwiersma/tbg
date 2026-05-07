@@ -11,28 +11,29 @@ if DEBUG:
 
 
 def get_game_data(search_set, key, value):
-    return [v for k, v in GAME_DATA[search_set].items() if v.get(key) == value]
+    return {k: v for k, v in GAME_DATA[search_set].items() if v.get(key) == value}
 
 
 class GameInitIns(GameInit):
     def __init__(self):
         super().__init__()
+        class_dict = get_game_data("object_definition", "object_class", "PlayerClass")
+        race_dict = get_game_data("object_definition", "object_class", "PlayerRace")
         self.character_classes = (
-            [c.get("class_weapon").lower() for c in get_game_data("object_definition", "object_class", "PlayerClass")],
-            "/".join([f"<{c.get('color')}>{c.get('class_weapon')}</{c.get('color')}>" for c in get_game_data("object_definition", "object_class", "PlayerClass")])
+            [c.get("class_weapon").lower() for c in class_dict.values()],
+            "/".join([f"<{c.get('color')}>{c.get('class_weapon')}</{c.get('color')}>" for c in class_dict.values()])
         )
         self.character_races = (
-            [c.get("class_weapon").lower() for c in get_game_data("object_definition", "object_class", "PlayerClass")],
-            "/".join([f"<{c.get('color')}>{c.get('class_weapon')}</{c.get('color')}>" for c in get_game_data("object_definition", "object_class", "PlayerClass")])
+            [k for k in race_dict.keys()],
+            "/".join([f"<o>{k}</o>" for k in race_dict.keys()])
         )
 
     def fnc_set_player_class(self, cmd):
         matched = [
-            c for c in get_game_data("object_definition", "object_class", "PlayerClass")
+            c for c in get_game_data("object_definition", "object_class", "PlayerClass").values()
             if cmd.lower() in c["class_weapon"].lower()
         ]
-        class_key = matched[0].get("name").lower()
-        self.player.player_class = GAME_DATA["object_definition"][class_key]
+        self.player.player_class = self._create_instance(obj_name=matched[0].get("name").lower(), struct=matched[0])
 
 
 handler = CommandHandler()
@@ -53,8 +54,11 @@ def send_cmd(cmd: str) -> str:
 if DEBUG:
     print(intro())
     print(send_cmd("y"))
-    print(send_cmd("2"))
+    print(send_cmd("1"))
     print(send_cmd("Bob"))
-    print(send_cmd("Gnome"))
+    print(send_cmd("half-elf"))
     print(send_cmd("Sword"))
+    print(send_cmd("Criminal"))
     print(send_cmd("y"))
+    print(send_cmd("pm"))
+    print(send_cmd("5"))
