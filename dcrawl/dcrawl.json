@@ -13,7 +13,7 @@
             {
                 "q": "How many adventurers are <yellow>playing</yellow>? <yellow>1-6</yellow>",
                 "a": ["1", "2", "3", "4", "5", "6"],
-                "game_fnc": "fnc_set_player_count"
+                "game_fnc": ["fnc_set_player_count", ""]
             }
         ],
         "help": [
@@ -28,22 +28,26 @@
       "steps": [
         {
           "q": "Adventurer {current_player_num} what is your <purple>name</purple> brave one?",
-          "game_fnc": "fnc_new_player"
+          "game_fnc": ["fnc_new_player", ""]
         },
         {
-        "q": "Well well... {player} and what are you?\n <orange>Human</orange> / Elf / <blue>Half Elf</blue> / <dim>Dwarf</dim> / <purple>Halfling</purple> / <red>Gnome</red> / <green>Half Orc</green> / <yellow>Dragonborn</yellow> ",
-        "a": ["human", "elf", "half-elf", "dwarf", "halfling", "gnome", "half-orc", "dragonborn", "goblin"],
-        "game_var": "player.race"
+        "q": "Well well... {player} and what are you?\n {character_races[1]}",
+        "a": "{character_races[0]}",
+        "game_var": ["player.player_race", ""]
         },
         {
           "q": "{player}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
           "a": "{character_classes[0]}",
-          "game_fnc": "fnc_set_player_class"
+          "game_fnc": ["fnc_set_player_class", ""]
         },
         {
-          "q": "{player}, {player.player_class[desc]} Magnificent! Are you sure of this? y/n",
+          "q": "{player.name}, the {player.player_race} {player.player_class} what are your origins? 'Criminal'",
+          "a": "Criminal"
+        },
+        {
+          "q": "{player}, {player.player_class.desc} Magnificent! Are you ready for adventure? y/n",
           "a": ["y","n"],
-          "game_fnc": "fnc_set_player_done"
+          "game_fnc": ["fnc_set_player_done", ""]
         }
       ],
       "help": [
@@ -59,12 +63,12 @@
         {
           "q": "What meridiem is it? <yellow>am/pm</yellow>",
           "a": ["am", "pm"],
-          "game_var": "game_meridiem"
+          "game_var": ["game_meridiem", ""]
         },
         {
           "q": "It is time to get going! What <yellow>hour</yellow> of the <yellow>day</yellow> is it? <yellow>1-12</yellow>",
           "a": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "12"],
-          "game_var": "game_time"
+          "game_var": ["game_time", ""]
         }
       ],
       "help": [
@@ -84,6 +88,7 @@
       "Location": {"parent_class": "GameObject", "color": "dim"},
       "Race": {"parent_class": "GameObject"},
       "PlayerRace": {"parent_class": "Race"},
+      "PlayerStats": {"parent_class": "GameObject", "desc": null, "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}},
       "Item": {"parent_class": "GameObject", "color": "green"},
       "Weapon": {"parent_class": "Item", "damage": 0, "damage_type": null, "slot": null},
       "Armor": {"parent_class": "Item", "armor_value": 0, "armor_type": null, "slot": null},
@@ -91,10 +96,12 @@
   },
   "object_definition": {
       "labyrinth": {"name": "labyrinth", "object_class": "Location"},
-      "sword_01": {"name": "sword", "object_class": "Weapon"},
-      "sword_02": {"name": "+1 sword", "object_class": "Weapon", "damage": 10, "damage_type": "slash", "slot": "1hand"},
+      "sword_01": {"name": "Sword", "object_class": "Weapon"},
+      "sword_02": {"name": "+1 Sword", "object_class": "Weapon", "damage": 10, "damage_type": "slash", "slot": "1hand"},
       "helm_01": {"name": "Leather Helmet", "object_class": "Armor", "armor": 5, "armor_type": "leather", "slot": "head"},
-      "shield_01": {"name": "Buckler", "object_class": "Armor", "armor": 15, "armor_type": "metal", "slot": "1hand"},
+      "shield_01": {"name": "Shield", "object_class": "Armor", "armor": 15, "armor_type": "metal", "slot": "1hand"},
+      "item_01": {"name": "Item", "object_class": "Item"},
+      "bow_01": {"name": "Bow", "object_class": "Item"},
       "human": {"name":  "Human", "object_class": "PlayerRace", "color":  "orange"},
       "elf": {"name":  "Elf", "object_class": "PlayerRace", "color":  "white"},
       "half-elf": {"name":  "Half-Elf", "object_class": "PlayerRace", "color":  "blue"},
@@ -108,21 +115,21 @@
         "color": "orange",
         "class_weapon": "Sword",
         "equipment": ["Heavy Armor", "Sword", "Shield"],
-        "desc": "a mighty {player.race} <orange>Warrior</orange> with <green>Sword</green> and <green>Shield</green>."
+        "desc": "a mighty {player.player_race} <orange>Warrior</orange> with <o>sword_01</o> and <o>shield_01</o>."
       },
       "ranger": {"object_class": "PlayerClass",
         "name": "Ranger",
         "color": "green",
         "class_weapon": "Bow",
         "equipment": ["<green>Leather Armor</green>", "<green>Bow</green>", "<green>Arrow Quiver</green>"],
-        "desc": "a nimble {player.race} <green>Ranger</green>, danger at a distance."
+        "desc": "a nimble {player.player_race} <green>Ranger</green> with a <o>bow_01</o> for danger at a distance."
       },
       "sorcerer": {"object_class": "PlayerClass",
         "name": "Sorcerer",
         "color": "blue",
         "class_weapon": "Magic",
         "equipment": ["<green>Silken Robe</green>", "<green>Magical Staff</green>", "<green>Holy Symbol</green>"],
-        "desc": "a wise {player.race} <blue>Sorcerer</blue> wielding the <blue>elemental powers</blue>."
+        "desc": "a wise {player.player_race} <blue>Sorcerer</blue> wielding the <blue>elemental powers</blue>."
       }
   },
   "help": [

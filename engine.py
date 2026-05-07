@@ -26,7 +26,7 @@ class GameObject:
 
 CLASS_REGISTRY: dict[str, type] = {"GameObject": GameObject}
 OBJECT_REGISTRY: dict[str, object] = {}
-_OBJ_TAG = re.compile(r"<o>(\w+)</o>")
+_OBJ_TAG = re.compile(r"<o>([^<>]+)</o>")
 
 def create_class_object(dependencies):
     def make_init(defaults):
@@ -120,9 +120,12 @@ class GameInit:
             return "__EXIT__"
         for i, (init_name, init_set, initialized) in enumerate(self.initialized):
             if not initialized:
-                return resolve_objects(self._resolve_return(self.initialize(i, init_name, init_set, cmd)))
+                return self._resolve_return(resolve_objects(self.initialize(i, init_name, init_set, cmd)))
         self.game_data["players"] = self.players
         return str(self.game_data)
+
+    def _create_instance(self, class_name=None, obj_name=None, struct={}):
+        return create_instance(class_name=class_name, obj_name=obj_name, struct=struct)
 
     def initialize(self, i, init_name, init_set, cmd=None):
         self.response = ""
@@ -170,7 +173,7 @@ class GameInit:
 
     def _resolve_game_fnc(self, game_fnc, cmd):
         if game_fnc:
-            _fnc_resolved = getattr(self, game_fnc)
+            _fnc_resolved = getattr(self, game_fnc[0])
             result = _fnc_resolved(cmd)
             if result == "reset_all":
                 pass
@@ -182,11 +185,14 @@ class GameInit:
 
     def _resolve_game_var(self, game_var, cmd):
         if game_var:
-            if "." in game_var:
-                obj_name, attr = game_var.split(".", 1)
+            inst_obj = create_instance(obj_name=cmd.lower())
+            if inst_obj:
+                cmd = inst_obj
+            if "." in game_var[0]:
+                obj_name, attr = game_var[0].split(".", 1)
                 setattr(getattr(self, obj_name), attr, cmd)
             else:
-                self.game_data[game_var] = cmd
+                self.game_data[game_var[0]] = cmd
 
     def _resolve_return(self, text):
         while True:
