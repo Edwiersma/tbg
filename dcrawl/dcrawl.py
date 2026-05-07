@@ -17,20 +17,22 @@ def get_game_data(search_set, key, value):
 class GameInitIns(GameInit):
     def __init__(self):
         super().__init__()
-        class_dict = get_game_data("object_definition", "object_class", "PlayerClass")
-        race_dict = get_game_data("object_definition", "object_class", "PlayerRace")
+        class_dict = get_game_data("object_definition", "object_class", "C_PlayerClass")
+        race_dict = get_game_data("object_definition", "object_class", "C_PlayerRace")
+        # background_dict = get_game_data("object_definition", "object_class", "PlayerRace")
         self.character_classes = (
             [c.get("class_weapon").lower() for c in class_dict.values()],
-            "/".join([f"<{c.get('color')}>{c.get('class_weapon')}</{c.get('color')}>" for c in class_dict.values()])
+            " / ".join([f"<{c.get('color')}>{c.get('class_weapon')}</{c.get('color')}>" for c in class_dict.values()])
         )
         self.character_races = (
             [k for k in race_dict.keys()],
-            "/".join([f"<o>{k}</o>" for k in race_dict.keys()])
+            " / ".join([f"<o>{v.get("name")}</o>" for v in race_dict.values()])
         )
 
-    def fnc_set_player_class(self, cmd):
+    def fnc_set_player_class(self, cmd, arg):
+        print(f"### {cmd}: {arg}")
         matched = [
-            c for c in get_game_data("object_definition", "object_class", "PlayerClass").values()
+            c for c in get_game_data("object_definition", "object_class", "C_PlayerClass").values()
             if cmd.lower() in c["class_weapon"].lower()
         ]
         self.player.player_class = self._create_instance(obj_name=matched[0].get("name").lower(), struct=matched[0])

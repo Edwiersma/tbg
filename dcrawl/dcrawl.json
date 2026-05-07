@@ -31,21 +31,21 @@
           "game_fnc": ["fnc_new_player", ""]
         },
         {
-        "q": "Well well... {player} and what are you?\n {character_races[1]}",
+        "q": "Well well... {player} and what are you?\n  {character_races[1]}",
         "a": "{character_races[0]}",
-        "game_var": ["player.player_race", ""]
+        "game_var": ["player.player_race", "plr_"]
         },
         {
-          "q": "{player}, how will you <yellow>vanquish</yellow> your <red>foes</red>? {character_classes[1]}",
+          "q": "{player}, how will you <yellow>vanquish</yellow> your <red>foes</red>?\n  {character_classes[1]}",
           "a": "{character_classes[0]}",
-          "game_fnc": ["fnc_set_player_class", ""]
+          "game_fnc": ["fnc_set_player_class", "plc_"]
         },
         {
           "q": "{player.name}, the {player.player_race} {player.player_class} what are your origins? 'Criminal'",
           "a": "Criminal"
         },
         {
-          "q": "{player}, {player.player_class.desc} Magnificent! Are you ready for adventure? y/n",
+          "q": "{player}, {player.player_class.desc} Magnificent! Are you ready for adventure? <yellow>y/n</yellow>",
           "a": ["y","n"],
           "game_fnc": ["fnc_set_player_done", ""]
         }
@@ -61,14 +61,14 @@
     "game_init": {
       "steps": [
         {
-          "q": "What meridiem is it? <yellow>am/pm</yellow>",
-          "a": ["am", "pm"],
-          "game_var": ["game_meridiem", ""]
-        },
-        {
           "q": "It is time to get going! What <yellow>hour</yellow> of the <yellow>day</yellow> is it? <yellow>1-12</yellow>",
           "a": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "12"],
           "game_var": ["game_time", ""]
+        },
+        {
+          "q": "What meridiem is it? <yellow>am/pm</yellow>",
+          "a": ["am", "pm"],
+          "game_var": ["game_meridiem", ""]
         }
       ],
       "help": [
@@ -82,49 +82,49 @@
   },
   "character_classes": ["warrior", "ranger", "sorcerer"],
   "object_classes": {
-      "GameObject": {"name": "default", "color": "dim"},
-      "ObjName": {"parent_class": "GameObject", "color": "purple"},
-      "Player": {"parent_class": "ObjName", "player_class": null,"inventory": []},
-      "Location": {"parent_class": "GameObject", "color": "dim"},
-      "Race": {"parent_class": "GameObject"},
-      "PlayerRace": {"parent_class": "Race"},
-      "PlayerStats": {"parent_class": "GameObject", "desc": null, "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}},
-      "Item": {"parent_class": "GameObject", "color": "green"},
-      "Weapon": {"parent_class": "Item", "damage": 0, "damage_type": null, "slot": null},
-      "Armor": {"parent_class": "Item", "armor_value": 0, "armor_type": null, "slot": null},
-      "PlayerClass": {"parent_class": "GameObject", "class_name": null, "class_weapon": null, "desc": null}
+      "C_GameObject": {"name": "default", "color": "dim"},
+      "C_ObjName": {"parent_class": "C_GameObject", "color": "purple"},
+      "C_Player": {"parent_class": "C_ObjName", "player_class": null,"inventory": []},
+      "C_Location": {"parent_class": "C_GameObject", "color": "dim"},
+      "C_Race": {"parent_class": "C_GameObject"},
+      "C_Item": {"parent_class": "C_GameObject", "color": "green"},
+      "C_Weapon": {"parent_class": "C_Item", "damage": 0, "damage_type": null, "slot": null},
+      "C_Armor": {"parent_class": "C_Item", "armor_value": 0, "armor_type": null, "slot": null},
+      "C_PlayerRace": {"parent_class": "C_Race"},
+      "C_PlayerStats": {"parent_class": "C_GameObject", "desc": null, "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}},
+      "C_PlayerClass": {"parent_class": "C_GameObject", "class_name": null, "class_weapon": null, "desc": null}
   },
   "object_definition": {
-      "labyrinth": {"name": "labyrinth", "object_class": "Location"},
-      "sword_01": {"name": "Sword", "object_class": "Weapon"},
-      "sword_02": {"name": "+1 Sword", "object_class": "Weapon", "damage": 10, "damage_type": "slash", "slot": "1hand"},
-      "helm_01": {"name": "Leather Helmet", "object_class": "Armor", "armor": 5, "armor_type": "leather", "slot": "head"},
-      "shield_01": {"name": "Shield", "object_class": "Armor", "armor": 15, "armor_type": "metal", "slot": "1hand"},
-      "item_01": {"name": "Item", "object_class": "Item"},
-      "bow_01": {"name": "Bow", "object_class": "Item"},
-      "human": {"name":  "Human", "object_class": "PlayerRace", "color":  "orange"},
-      "elf": {"name":  "Elf", "object_class": "PlayerRace", "color":  "white"},
-      "half-elf": {"name":  "Half-Elf", "object_class": "PlayerRace", "color":  "blue"},
-      "dwarf": {"name":  "Dwarf", "object_class": "PlayerRace", "color":  "dim"},
-      "halfling": {"name":  "Halfling", "object_class": "PlayerRace", "color":  "purple"},
-      "gnome": {"name":  "Gnome", "object_class": "PlayerRace", "color":  "red"},
-      "half-orc": {"name":  "Half-Orc", "object_class": "PlayerRace", "color":  "green"},
-      "dragonborn": {"name":  "Dragonborn", "object_class": "PlayerRace", "color":  "yellow"},
-      "warrior": {"object_class": "PlayerClass",
+      "loc_labyrinth": {"name": "labyrinth", "object_class": "C_Location"},
+      "itm_sword_01": {"name": "Sword", "object_class": "C_Weapon"},
+      "itm_sword_02": {"name": "+1 Sword", "object_class": "C_Weapon", "damage": 10, "damage_type": "slash", "slot": "1hand"},
+      "itm_helm_01": {"name": "Leather Helmet", "object_class": "C_Armor", "armor": 5, "armor_type": "leather", "slot": "head"},
+      "itm_shield_01": {"name": "Shield", "object_class": "C_Armor", "armor": 15, "armor_type": "metal", "slot": "1hand"},
+      "itm_item_01": {"name": "Item", "object_class": "C_Item"},
+      "itm_bow_01": {"name": "Bow", "object_class": "C_Item"},
+      "plr_human": {"name":  "Human", "object_class": "C_PlayerRace", "color":  "orange"},
+      "plr_elf": {"name":  "Elf", "object_class": "C_PlayerRace", "color":  "white"},
+      "plr_half-elf": {"name":  "Half-Elf", "object_class": "C_PlayerRace", "color":  "blue"},
+      "plr_dwarf": {"name":  "Dwarf", "object_class": "C_PlayerRace", "color":  "dim"},
+      "plr_halfling": {"name":  "Halfling", "object_class": "C_PlayerRace", "color":  "purple"},
+      "plr_gnome": {"name":  "Gnome", "object_class": "C_PlayerRace", "color":  "red"},
+      "plr_half-orc": {"name":  "Half-Orc", "object_class": "C_PlayerRace", "color":  "green"},
+      "plr_dragonborn": {"name":  "Dragonborn", "object_class": "C_PlayerRace", "color":  "yellow"},
+      "plc_warrior": {"object_class": "C_PlayerClass",
         "name": "Warrior",
         "color": "orange",
         "class_weapon": "Sword",
         "equipment": ["Heavy Armor", "Sword", "Shield"],
         "desc": "a mighty {player.player_race} <orange>Warrior</orange> with <o>sword_01</o> and <o>shield_01</o>."
       },
-      "ranger": {"object_class": "PlayerClass",
+      "plc_ranger": {"object_class": "C_PlayerClass",
         "name": "Ranger",
         "color": "green",
         "class_weapon": "Bow",
         "equipment": ["<green>Leather Armor</green>", "<green>Bow</green>", "<green>Arrow Quiver</green>"],
         "desc": "a nimble {player.player_race} <green>Ranger</green> with a <o>bow_01</o> for danger at a distance."
       },
-      "sorcerer": {"object_class": "PlayerClass",
+      "plc_sorcerer": {"object_class": "C_PlayerClass",
         "name": "Sorcerer",
         "color": "blue",
         "class_weapon": "Magic",

@@ -76,6 +76,7 @@ def create_instance(class_name=None, obj_name=None, struct={}):
             return CLASS_REGISTRY[class_name]
         if class_name not in CLASS_REGISTRY:
             base = GAME_DATA["object_classes"].get(class_name)
+            print(f"### Create Instance: class_name: {class_name}, obj_name: {obj_name}, struct: {struct}, base: {base}")
             if base is None:
                 return None
             struct = base | struct
@@ -120,7 +121,8 @@ class GameInit:
             return "__EXIT__"
         for i, (init_name, init_set, initialized) in enumerate(self.initialized):
             if not initialized:
-                return self._resolve_return(resolve_objects(self.initialize(i, init_name, init_set, cmd)))
+                initialize = self.initialize(i, init_name, init_set, cmd)
+                return resolve_objects(initialize)
         self.game_data["players"] = self.players
         return str(self.game_data)
 
@@ -133,7 +135,10 @@ class GameInit:
         steps = GAME_DATA.get("init").get(init_set).get("steps")
         step = steps[self.init_step]
         if cmd is None:
-            return step.get("q").format_map(self.__dict__)
+            return self._resolve_return(step.get("q").format_map(self.__dict__))
+
+        print(f"### step.get('game_var'): {step.get('game_var')}")
+        print(f"### step.get('game_fnc'): {step.get('game_fnc')}")
 
         if (r := self._resolve_response(step.get("r", None), cmd)) is not None: return r
         if (r := self._resolve_answer(step.get("a", None), step, cmd)) is not None: return r
@@ -141,16 +146,12 @@ class GameInit:
         if (r := self._resolve_game_fnc(step.get("game_fnc", None), cmd)) is not None: return r
 
         self.init_step += 1
-        try:
-            print(f"### Player: {self.player.__dict__}")
-        except:
-            pass
         if self.init_step >= len(steps):
             self.initialized[i] = (init_name, init_set, True)
             self.init_step = 0
             return self.handler_interface(None)
 
-        return self.response + steps[self.init_step].get("q").format_map(self.__dict__)
+        return self._resolve_return(self.response + steps[self.init_step].get("q").format_map(self.__dict__))
 
     def _resolve_response(self, response_list, cmd):
         if response_list:
@@ -174,7 +175,7 @@ class GameInit:
     def _resolve_game_fnc(self, game_fnc, cmd):
         if game_fnc:
             _fnc_resolved = getattr(self, game_fnc[0])
-            result = _fnc_resolved(cmd)
+            result = _fnc_resolved(cmd, game_fnc[1])
             if result == "reset_all":
                 pass
             elif result == "reset_set":
@@ -202,15 +203,17 @@ class GameInit:
             text = resolved
         return self.response + resolved
 
-    def fnc_set_player_count(self, cmd):
+    def fnc_set_player_count(self, cmd, arg):
         self.player_count = int(cmd)
         for i in range(self.player_count):
             self.initialized.insert(i + 2, (f"player_init_{i}", "player_init", False))
         self.initialized.pop(1)
 
-    def fnc_new_player(self, cmd):
-        self.player = create_instance(class_name="Player", struct={"name": cmd})
+    def fnc_new_player(self, cmd, arg):
+        print(f"### cmd: {cmd}, arg: {arg}")
+        self.player = create_instance(class_name="C_Player", struct={"name": cmd})
         self.players.append(self.player)
+        print(f"### self.player: {self.player}")
         self.current_player_num += 1
 
     def fnc_set_player_done(self, cmd):
