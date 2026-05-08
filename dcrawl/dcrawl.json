@@ -33,16 +33,17 @@
         {
         "q": "Well well... {player} and what are you?\n  {character_races[1]}",
         "a": "{character_races[0]}",
-        "game_var": ["player.player_race", "plr_"]
+        "game_var": ["player.player_race", "prc_"]
         },
         {
           "q": "{player}, how will you <yellow>vanquish</yellow> your <red>foes</red>?\n  {character_classes[1]}",
           "a": "{character_classes[0]}",
-          "game_fnc": ["fnc_set_player_class", "plc_"]
+          "game_fnc": ["fnc_set_player_class", "pcs_"]
         },
         {
-          "q": "{player.name}, the {player.player_race} {player.player_class} what are your origins? 'Criminal'",
-          "a": "Criminal"
+          "q": "{player.name}, the {player.player_race} {player.player_class} what are your origins?\n  {character_backgrounds[1]}",
+          "a": "{character_backgrounds[0]}",
+          "game_var": ["player.player_background", "pbg_"]
         },
         {
           "q": "{player}, {player.player_class.desc} Magnificent! Are you ready for adventure? <yellow>y/n</yellow>",
@@ -84,14 +85,16 @@
   "object_classes": {
       "C_GameObject": {"name": "default", "color": "dim"},
       "C_ObjName": {"parent_class": "C_GameObject", "color": "purple"},
-      "C_Player": {"parent_class": "C_ObjName", "player_class": null,"inventory": []},
+      "C_Player": {"parent_class": "C_ObjName", "player_class": null,"inventory": [],
+            "stats": {"str": 8, "dex": 8, "con": 8, "int": 8, "wis": 8, "cha": 8}
+      },
       "C_Location": {"parent_class": "C_GameObject", "color": "dim"},
-      "C_Race": {"parent_class": "C_GameObject"},
+      "C_Race": {"parent_class": "C_GameObject", "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}},
       "C_Item": {"parent_class": "C_GameObject", "color": "green"},
       "C_Weapon": {"parent_class": "C_Item", "damage": 0, "damage_type": null, "slot": null},
       "C_Armor": {"parent_class": "C_Item", "armor_value": 0, "armor_type": null, "slot": null},
       "C_PlayerRace": {"parent_class": "C_Race"},
-      "C_PlayerStats": {"parent_class": "C_GameObject", "desc": null, "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}},
+      "C_PlayerBackground": {"parent_class": "C_GameObject", "desc": null, "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}},
       "C_PlayerClass": {"parent_class": "C_GameObject", "class_name": null, "class_weapon": null, "desc": null}
   },
   "object_definition": {
@@ -102,32 +105,57 @@
       "itm_shield_01": {"name": "Shield", "object_class": "C_Armor", "armor": 15, "armor_type": "metal", "slot": "1hand"},
       "itm_item_01": {"name": "Item", "object_class": "C_Item"},
       "itm_bow_01": {"name": "Bow", "object_class": "C_Item"},
-      "plr_human": {"name":  "Human", "object_class": "C_PlayerRace", "color":  "orange"},
-      "plr_elf": {"name":  "Elf", "object_class": "C_PlayerRace", "color":  "white"},
-      "plr_half-elf": {"name":  "Half-Elf", "object_class": "C_PlayerRace", "color":  "blue"},
-      "plr_dwarf": {"name":  "Dwarf", "object_class": "C_PlayerRace", "color":  "dim"},
-      "plr_halfling": {"name":  "Halfling", "object_class": "C_PlayerRace", "color":  "purple"},
-      "plr_gnome": {"name":  "Gnome", "object_class": "C_PlayerRace", "color":  "red"},
-      "plr_half-orc": {"name":  "Half-Orc", "object_class": "C_PlayerRace", "color":  "green"},
-      "plr_dragonborn": {"name":  "Dragonborn", "object_class": "C_PlayerRace", "color":  "yellow"},
-      "plc_warrior": {"object_class": "C_PlayerClass",
+      "pbg_acolyte": {"name": "Acolyte", "object_class": "C_PlayerBackground", "color":  "blue"},
+      "pbg_criminal": {"name": "Criminal", "object_class": "C_PlayerBackground", "color":  "red"},
+      "pbg_soldier": {"name": "Soldier", "object_class": "C_PlayerBackground", "color":  "orange"},
+      "pbg_folk-hero": {"name": "Folk-Hero", "object_class": "C_PlayerBackground", "color":  "yellow"},
+      "pbg_sage": {"name": "Sage", "object_class": "C_PlayerBackground", "color":  "purple"},
+      "pbg_outlander": {"name": "Outlander", "object_class": "C_PlayerBackground", "color": "green"},
+      "prc_human": {"name": "Human", "object_class": "C_PlayerRace", "color":  "orange",
+              "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}
+      },
+      "prc_elf": {"name": "Elf", "object_class": "C_PlayerRace", "color":  "white",
+              "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}
+      },
+      "prc_half-elf": {"name": "Half-Elf", "object_class": "C_PlayerRace", "color":  "blue",
+              "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}
+      },
+      "prc_dwarf": {"name": "Dwarf", "object_class": "C_PlayerRace", "color":  "dim",
+              "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}
+      },
+      "prc_halfling": {"name": "Halfling", "object_class": "C_PlayerRace", "color":  "purple",
+              "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}
+      },
+      "prc_gnome": {"name": "Gnome", "object_class": "C_PlayerRace", "color":  "red",
+              "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}
+      },
+      "prc_half-orc": {"name": "Half-Orc", "object_class": "C_PlayerRace", "color":  "green",
+              "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}
+      },
+      "prc_dragonborn": {"name": "Dragonborn", "object_class": "C_PlayerRace", "color":  "yellow",
+              "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0}
+      },
+      "pcs_warrior": {"object_class": "C_PlayerClass",
         "name": "Warrior",
         "color": "orange",
         "class_weapon": "Sword",
+        "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0},
         "equipment": ["Heavy Armor", "Sword", "Shield"],
-        "desc": "a mighty {player.player_race} <orange>Warrior</orange> with <o>sword_01</o> and <o>shield_01</o>."
+        "desc": "a mighty {player.player_race} <orange>Warrior</orange> with <o>itm_sword_01</o> and <o>itm_shield_01</o>."
       },
-      "plc_ranger": {"object_class": "C_PlayerClass",
+      "pcs_ranger": {"object_class": "C_PlayerClass",
         "name": "Ranger",
         "color": "green",
         "class_weapon": "Bow",
+        "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0},
         "equipment": ["<green>Leather Armor</green>", "<green>Bow</green>", "<green>Arrow Quiver</green>"],
         "desc": "a nimble {player.player_race} <green>Ranger</green> with a <o>bow_01</o> for danger at a distance."
       },
-      "plc_sorcerer": {"object_class": "C_PlayerClass",
+      "pcs_sorcerer": {"object_class": "C_PlayerClass",
         "name": "Sorcerer",
         "color": "blue",
         "class_weapon": "Magic",
+        "stats": {"str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0},
         "equipment": ["<green>Silken Robe</green>", "<green>Magical Staff</green>", "<green>Holy Symbol</green>"],
         "desc": "a wise {player.player_race} <blue>Sorcerer</blue> wielding the <blue>elemental powers</blue>."
       }

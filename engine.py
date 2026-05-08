@@ -5,9 +5,12 @@ import random
 
 DEBUG = sys.platform != 'emscripten'
 if DEBUG:
-    with open('dcrawl.json') as json_file:
-        GAME_DATA = json.load(json_file)
-
+    try:
+        with open('dcrawl.json') as json_file:
+            GAME_DATA = json.load(json_file)
+    except:
+        with open('dcrawl/dcrawl.json') as json_file:
+            GAME_DATA = json.load(json_file)
 
 class GameObject:
     name: str = ""
@@ -24,7 +27,7 @@ class GameObject:
     def __str__(self) -> str:
         return self.render()
 
-CLASS_REGISTRY: dict[str, type] = {"GameObject": GameObject}
+CLASS_REGISTRY: dict[str, type] = {"C_GameObject": GameObject}
 OBJECT_REGISTRY: dict[str, object] = {}
 _OBJ_TAG = re.compile(r"<o>([^<>]+)</o>")
 
@@ -76,7 +79,6 @@ def create_instance(class_name=None, obj_name=None, struct={}):
             return CLASS_REGISTRY[class_name]
         if class_name not in CLASS_REGISTRY:
             base = GAME_DATA["object_classes"].get(class_name)
-            print(f"### Create Instance: class_name: {class_name}, obj_name: {obj_name}, struct: {struct}, base: {base}")
             if base is None:
                 return None
             struct = base | struct
@@ -137,9 +139,6 @@ class GameInit:
         if cmd is None:
             return self._resolve_return(step.get("q").format_map(self.__dict__))
 
-        print(f"### step.get('game_var'): {step.get('game_var')}")
-        print(f"### step.get('game_fnc'): {step.get('game_fnc')}")
-
         if (r := self._resolve_response(step.get("r", None), cmd)) is not None: return r
         if (r := self._resolve_answer(step.get("a", None), step, cmd)) is not None: return r
         if (r := self._resolve_game_var(step.get("game_var", None), cmd)) is not None: return r
@@ -165,12 +164,13 @@ class GameInit:
     def _resolve_answer(self, a_required, step, cmd):
         if a_required:
             cmd = cmd.lower()
-            if isinstance(a_required, list):
-                a_list = a_required
-                if cmd not in a_list:
+            if isinstance(a_required, str):
+                a_required = a_required.format_map(self.__dict__)
+                if f"'{cmd}'" not in a_required:
                     return self.response + step.get("q").format_map(self.__dict__)
-            elif isinstance(a_required, str):
-                pass
+            elif isinstance(a_required, list):
+                if cmd not in a_required:
+                    return self.response + step.get("q").format_map(self.__dict__)
 
     def _resolve_game_fnc(self, game_fnc, cmd):
         if game_fnc:
@@ -186,7 +186,8 @@ class GameInit:
 
     def _resolve_game_var(self, game_var, cmd):
         if game_var:
-            inst_obj = create_instance(obj_name=cmd.lower())
+            prefix = game_var[1] if len(game_var) > 1 else ""
+            inst_obj = create_instance(obj_name=f"{prefix}{cmd.lower()}")
             if inst_obj:
                 cmd = inst_obj
             if "." in game_var[0]:
@@ -216,7 +217,7 @@ class GameInit:
         print(f"### self.player: {self.player}")
         self.current_player_num += 1
 
-    def fnc_set_player_done(self, cmd):
+    def fnc_set_player_done(self, cmd, arg):
         if cmd == "y":
             pass
         else:
